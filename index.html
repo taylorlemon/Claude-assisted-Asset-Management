@@ -11,51 +11,50 @@
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
 
   :root {
-    --bg:       #0f1117;
-    --surface:  #181c27;
-    --surface2: #1f2436;
-    --border:   #2a3050;
-    --text:     #e8ecf4;
-    --muted:    #6b7599;
-    --accent:   #4f7cff;
-    --accent2:  #38d9a9;
-    --warn:     #f0a05a;
-    --danger:   #f06a6a;
-    --green:    #38d9a9;
-    --mono:     'DM Mono', monospace;
-    --sans:     'DM Sans', sans-serif;
-    --radius:   14px;
-    --tab-h:    64px;
+    --bg:      #0f1117;
+    --surface: #181c27;
+    --surface2:#1f2436;
+    --border:  #2a3050;
+    --text:    #e8ecf4;
+    --muted:   #6b7599;
+    --accent:  #4f7cff;
+    --warn:    #f0a05a;
+    --danger:  #f06a6a;
+    --green:   #38d9a9;
+    --mono:    'DM Mono', monospace;
+    --sans:    'DM Sans', sans-serif;
+    --radius:  14px;
+    --tab-h:   64px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
   html, body {
     height: 100%; width: 100%;
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 15px;
-    overflow: hidden;
+    background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 15px; overflow: hidden;
   }
 
-  /* ── Layout ── */
   #app { display: flex; flex-direction: column; height: 100dvh; }
 
   #header {
-    padding: 14px 20px 10px;
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-    flex-shrink: 0;
+    padding: 14px 16px 10px;
     padding-top: max(14px, env(safe-area-inset-top));
+    background: var(--bg); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
   }
   #header .logo { font-family: var(--mono); font-size: 13px; color: var(--accent); letter-spacing: 0.08em; }
-  #header .page-title { font-size: 16px; font-weight: 600; color: var(--text); }
-  #header .hbtn {
+  #header .page-title { font-size: 15px; font-weight: 600; }
+  .hbtn {
     background: var(--surface2); border: 1px solid var(--border);
     color: var(--muted); border-radius: 8px; padding: 6px 12px;
     font-size: 12px; font-family: var(--mono); cursor: pointer;
+  }
+  .user-badge {
+    font-size: 11px; font-family: var(--mono);
+    background: rgba(79,124,255,0.12); border: 1px solid rgba(79,124,255,0.3);
+    color: var(--accent); padding: 3px 10px; border-radius: 20px;
+    max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
 
   #screens { flex: 1; overflow: hidden; position: relative; }
@@ -66,54 +65,40 @@
   }
   .screen.active { display: block; }
 
-  /* ── Bottom tabs ── */
   #tabs {
-    height: var(--tab-h);
-    padding-bottom: env(safe-area-inset-bottom);
-    background: var(--surface);
-    border-top: 1px solid var(--border);
+    height: var(--tab-h); padding-bottom: env(safe-area-inset-bottom);
+    background: var(--surface); border-top: 1px solid var(--border);
     display: flex; flex-shrink: 0;
   }
   .tab {
     flex: 1; display: flex; flex-direction: column;
     align-items: center; justify-content: center; gap: 3px;
-    cursor: pointer; color: var(--muted);
-    font-size: 10px; font-family: var(--mono);
-    transition: color 0.15s;
-    border: none; background: none;
-    padding-top: 2px;
+    cursor: pointer; color: var(--muted); font-size: 10px; font-family: var(--mono);
+    transition: color 0.15s; border: none; background: none; padding-top: 2px;
   }
   .tab svg { width: 22px; height: 22px; }
   .tab.active { color: var(--accent); }
 
-  /* ── Cards ── */
   .card {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: var(--radius); padding: 16px; margin-bottom: 10px;
   }
   .card-row { display: flex; justify-content: space-between; align-items: center; }
   .card-label { font-size: 11px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; }
-  .card-value { font-size: 15px; font-weight: 500; }
   .asset-id { font-family: var(--mono); font-size: 13px; color: var(--accent); }
   .asset-name { font-size: 16px; font-weight: 600; margin: 4px 0 2px; }
   .asset-loc { font-size: 12px; color: var(--muted); }
 
-  /* ── Status badges ── */
   .badge {
-    font-size: 10px; font-family: var(--mono);
-    padding: 3px 8px; border-radius: 20px;
+    font-size: 10px; font-family: var(--mono); padding: 3px 8px; border-radius: 20px;
     text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500;
   }
-  .badge-available  { background: rgba(56,217,169,0.12); color: var(--green); border: 1px solid rgba(56,217,169,0.25); }
-  .badge-checked_out{ background: rgba(240,160,90,0.12);  color: var(--warn);  border: 1px solid rgba(240,160,90,0.25); }
-  .badge-maintenance{ background: rgba(240,106,106,0.12); color: var(--danger);border: 1px solid rgba(240,106,106,0.25); }
+  .badge-available   { background: rgba(56,217,169,0.12); color: var(--green);  border: 1px solid rgba(56,217,169,0.25); }
+  .badge-checked_out { background: rgba(240,160,90,0.12);  color: var(--warn);   border: 1px solid rgba(240,160,90,0.25); }
+  .badge-maintenance { background: rgba(240,106,106,0.12); color: var(--danger); border: 1px solid rgba(240,106,106,0.25); }
 
-  /* ── Stat tiles ── */
   .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-  .stat-tile {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 16px 14px;
-  }
+  .stat-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 14px; }
   .stat-num { font-size: 32px; font-weight: 600; font-family: var(--mono); line-height: 1; }
   .stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; }
   .stat-num.green  { color: var(--green); }
@@ -121,24 +106,24 @@
   .stat-num.danger { color: var(--danger); }
   .stat-num.accent { color: var(--accent); }
 
-  /* ── Inputs ── */
   .field { margin-bottom: 14px; }
   .field label { display: block; font-size: 11px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
   .field input, .field select, .field textarea {
     width: 100%; background: var(--surface2); border: 1px solid var(--border);
     border-radius: 10px; color: var(--text); font-family: var(--sans); font-size: 15px;
-    padding: 12px 14px; outline: none; appearance: none;
-    transition: border-color 0.15s;
+    padding: 12px 14px; outline: none; appearance: none; transition: border-color 0.15s;
   }
   .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
   .field textarea { resize: none; height: 80px; }
-  .field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b7599' d='M1 1l5 5 5-5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+  .field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b7599' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px;
+  }
 
-  /* ── Buttons ── */
   .btn {
     width: 100%; padding: 15px; border-radius: var(--radius);
-    font-size: 15px; font-weight: 600; cursor: pointer;
-    border: none; font-family: var(--sans); transition: opacity 0.15s;
+    font-size: 15px; font-weight: 600; cursor: pointer; border: none;
+    font-family: var(--sans); transition: opacity 0.15s;
     display: flex; align-items: center; justify-content: center; gap: 8px;
   }
   .btn:active { opacity: 0.75; }
@@ -150,8 +135,7 @@
   .btn + .btn  { margin-top: 8px; }
   .btn-sm { padding: 8px 14px; font-size: 13px; width: auto; border-radius: 8px; }
 
-  /* ── Search bar ── */
-  .search-wrap { position: relative; margin-bottom: 14px; }
+  .search-wrap { position: relative; margin-bottom: 10px; }
   .search-wrap input {
     width: 100%; background: var(--surface); border: 1px solid var(--border);
     border-radius: 12px; color: var(--text); font-size: 15px;
@@ -160,106 +144,9 @@
   .search-wrap input:focus { border-color: var(--accent); }
   .search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
 
-  /* ── Section header ── */
   .section-head { font-size: 11px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin: 18px 0 8px; }
 
-  /* ── QR overlay ── */
-  #qr-overlay {
-    position: fixed; inset: 0; background: #000;
-    z-index: 100; display: none; flex-direction: column;
-  }
-  #qr-overlay.open { display: flex; }
-  #qr-video { width: 100%; height: 100%; object-fit: cover; }
-  #qr-frame {
-    position: absolute; inset: 0; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; pointer-events: none;
-  }
-  #qr-box {
-    width: 240px; height: 240px; border-radius: 20px;
-    border: 2px solid var(--accent);
-    box-shadow: 0 0 0 9999px rgba(0,0,0,0.55);
-  }
-  #qr-label {
-    margin-top: 20px; color: #fff; font-size: 14px;
-    background: rgba(0,0,0,0.5); padding: 6px 16px; border-radius: 20px;
-  }
-  #qr-close-btn {
-    position: absolute; top: max(20px, env(safe-area-inset-top)); right: 20px;
-    background: rgba(255,255,255,0.15); border: none; color: #fff;
-    width: 40px; height: 40px; border-radius: 20px; font-size: 20px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-  }
-
-  /* ── Asset detail panel ── */
-  #detail-panel {
-    position: fixed; inset: 0; background: var(--bg); z-index: 50;
-    display: none; flex-direction: column; overflow-y: auto;
-    padding: 0 0 40px;
-  }
-  #detail-panel.open { display: flex; }
-  #detail-header {
-    padding: 16px 16px 12px; padding-top: max(16px, env(safe-area-inset-top));
-    background: var(--bg); border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: 12px; flex-shrink: 0;
-  }
-  #detail-back {
-    background: var(--surface2); border: 1px solid var(--border);
-    color: var(--text); border-radius: 8px; padding: 6px 12px;
-    font-size: 13px; cursor: pointer;
-  }
-  #detail-body { padding: 16px; }
-
-  /* ── History timeline ── */
-  .timeline { margin-top: 6px; }
-  .tx-item { display: flex; gap: 12px; padding-bottom: 16px; position: relative; }
-  .tx-item:not(:last-child)::before {
-    content: ''; position: absolute; left: 11px; top: 22px;
-    width: 2px; bottom: 0; background: var(--border);
-  }
-  .tx-dot {
-    width: 24px; height: 24px; border-radius: 12px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center; font-size: 11px;
-  }
-  .tx-dot.checkout  { background: rgba(240,160,90,0.2);  color: var(--warn);   border: 1px solid rgba(240,160,90,0.3); }
-  .tx-dot.checkin   { background: rgba(56,217,169,0.2);  color: var(--green);  border: 1px solid rgba(56,217,169,0.3); }
-  .tx-dot.added     { background: rgba(79,124,255,0.2);  color: var(--accent); border: 1px solid rgba(79,124,255,0.3); }
-  .tx-dot.transfer  { background: rgba(200,200,255,0.1); color: var(--muted);  border: 1px solid var(--border); }
-  .tx-dot.note      { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
-  .tx-info { flex: 1; padding-top: 2px; }
-  .tx-action { font-size: 13px; font-weight: 500; }
-  .tx-meta   { font-size: 11px; color: var(--muted); margin-top: 2px; }
-
-  /* ── Toast ── */
-  #toast {
-    position: fixed; bottom: calc(var(--tab-h) + 16px + env(safe-area-inset-bottom));
-    left: 50%; transform: translateX(-50%) translateY(20px);
-    background: var(--surface2); border: 1px solid var(--border);
-    color: var(--text); padding: 10px 20px; border-radius: 20px;
-    font-size: 13px; font-family: var(--mono);
-    opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none;
-    white-space: nowrap; z-index: 200;
-  }
-  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  #toast.success { border-color: rgba(56,217,169,0.4); color: var(--green); }
-  #toast.error   { border-color: rgba(240,106,106,0.4); color: var(--danger); }
-
-  /* ── Config screen ── */
-  .config-url { font-family: var(--mono); font-size: 12px; word-break: break-all; color: var(--muted); }
-  .divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
-
-  /* ── Loading ── */
-  .spinner {
-    width: 20px; height: 20px; border-radius: 50%;
-    border: 2px solid var(--border); border-top-color: var(--accent);
-    animation: spin 0.7s linear infinite; display: inline-block;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-wrap { display: flex; justify-content: center; padding: 40px; }
-
-  .empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
-
-  /* ── Filter chips ── */
-  .chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 10px; scrollbar-width: none; }
+  .chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 8px; scrollbar-width: none; }
   .chips::-webkit-scrollbar { display: none; }
   .chip {
     flex-shrink: 0; padding: 5px 12px; border-radius: 20px;
@@ -268,8 +155,9 @@
     cursor: pointer; white-space: nowrap;
   }
   .chip.active { background: rgba(79,124,255,0.15); border-color: var(--accent); color: var(--accent); }
+  .chip.mine   { border-color: rgba(56,217,169,0.4); }
+  .chip.mine.active { background: rgba(56,217,169,0.12); border-color: var(--green); color: var(--green); }
 
-  /* ── Scan/manual toggle ── */
   .scan-toggle { display: flex; gap: 8px; margin-bottom: 16px; }
   .scan-toggle button {
     flex: 1; padding: 10px; border-radius: 10px; font-size: 13px;
@@ -280,13 +168,74 @@
 
   .action-result {
     background: var(--surface); border: 1px solid var(--accent);
-    border-radius: var(--radius); padding: 16px; margin-bottom: 14px;
-    display: none;
+    border-radius: var(--radius); padding: 16px; margin-bottom: 14px; display: none;
   }
   .action-result.visible { display: block; }
-  .result-id { font-family: var(--mono); font-size: 13px; color: var(--accent); }
+  .result-id   { font-family: var(--mono); font-size: 13px; color: var(--accent); }
   .result-name { font-size: 17px; font-weight: 600; margin: 4px 0; }
   .result-detail { font-size: 13px; color: var(--muted); }
+
+  #qr-overlay { position: fixed; inset: 0; background: #000; z-index: 100; display: none; flex-direction: column; }
+  #qr-overlay.open { display: flex; }
+  #qr-video { width: 100%; height: 100%; object-fit: cover; }
+  #qr-frame { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+  #qr-box { width: 240px; height: 240px; border-radius: 20px; border: 2px solid var(--accent); box-shadow: 0 0 0 9999px rgba(0,0,0,0.55); }
+  #qr-label { margin-top: 20px; color: #fff; font-size: 14px; background: rgba(0,0,0,0.5); padding: 6px 16px; border-radius: 20px; }
+  #qr-close-btn { position: absolute; top: max(20px, env(safe-area-inset-top)); right: 20px; background: rgba(255,255,255,0.15); border: none; color: #fff; width: 40px; height: 40px; border-radius: 20px; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+  #detail-panel { position: fixed; inset: 0; background: var(--bg); z-index: 50; display: none; flex-direction: column; overflow-y: auto; padding: 0 0 40px; }
+  #detail-panel.open { display: flex; }
+  #detail-header { padding: 16px 16px 12px; padding-top: max(16px, env(safe-area-inset-top)); background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  #detail-back { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 6px 12px; font-size: 13px; cursor: pointer; }
+  #detail-body { padding: 16px; }
+
+  .timeline { margin-top: 6px; }
+  .tx-item { display: flex; gap: 12px; padding-bottom: 16px; position: relative; }
+  .tx-item:not(:last-child)::before { content: ''; position: absolute; left: 11px; top: 22px; width: 2px; bottom: 0; background: var(--border); }
+  .tx-dot { width: 24px; height: 24px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+  .tx-dot.checkout { background: rgba(240,160,90,0.2);  color: var(--warn);   border: 1px solid rgba(240,160,90,0.3); }
+  .tx-dot.checkin  { background: rgba(56,217,169,0.2);  color: var(--green);  border: 1px solid rgba(56,217,169,0.3); }
+  .tx-dot.added    { background: rgba(79,124,255,0.2);  color: var(--accent); border: 1px solid rgba(79,124,255,0.3); }
+  .tx-dot.transfer { background: rgba(200,200,255,0.1); color: var(--muted);  border: 1px solid var(--border); }
+  .tx-dot.note     { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+  .tx-info { flex: 1; padding-top: 2px; }
+  .tx-action { font-size: 13px; font-weight: 500; }
+  .tx-meta   { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  #toast {
+    position: fixed; bottom: calc(var(--tab-h) + 16px + env(safe-area-inset-bottom));
+    left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); padding: 10px 20px; border-radius: 20px;
+    font-size: 13px; font-family: var(--mono);
+    opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none;
+    white-space: nowrap; z-index: 200;
+  }
+  #toast.show    { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.success { border-color: rgba(56,217,169,0.4); color: var(--green); }
+  #toast.error   { border-color: rgba(240,106,106,0.4); color: var(--danger); }
+
+  .config-url { font-family: var(--mono); font-size: 12px; word-break: break-all; color: var(--muted); }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+  .spinner { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); border-top-color: var(--accent); animation: spin 0.7s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-wrap { display: flex; justify-content: center; padding: 40px; }
+  .empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
+
+  /* ── Login overlay ── */
+  #login-overlay {
+    position: fixed; inset: 0; background: var(--bg);
+    z-index: 500; display: flex; align-items: center; justify-content: center; padding: 24px;
+  }
+  #login-overlay.hidden { display: none; }
+  .login-box {
+    width: 100%; max-width: 360px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 36px 24px; text-align: center;
+  }
+  .login-logo { font-family: var(--mono); font-size: 22px; color: var(--accent); letter-spacing: 0.08em; margin-bottom: 4px; }
+  .login-sub  { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+  .login-error { color: var(--danger); font-size: 13px; min-height: 20px; margin-bottom: 10px; }
 </style>
 </head>
 <body>
@@ -296,14 +245,18 @@
   <div id="header">
     <span class="logo">ASSET//TRACK</span>
     <span class="page-title" id="page-title">Dashboard</span>
-    <button class="hbtn" onclick="showScreen('settings')">CFG</button>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span id="header-user-badge" class="user-badge" style="display:none"></span>
+      <button class="hbtn" onclick="showScreen('settings')">CFG</button>
+    </div>
   </div>
 
   <!-- Screens -->
   <div id="screens">
 
-    <!-- ═══ DASHBOARD ═══ -->
+    <!-- DASHBOARD -->
     <div class="screen active" id="screen-dashboard">
+      <div id="dash-context" style="font-size:12px;color:var(--muted);font-family:var(--mono);margin-bottom:10px"></div>
       <div class="stats-grid">
         <div class="stat-tile"><div class="stat-num accent" id="stat-total">—</div><div class="stat-label">Total assets</div></div>
         <div class="stat-tile"><div class="stat-num green"  id="stat-avail">—</div><div class="stat-label">Available</div></div>
@@ -318,24 +271,27 @@
       </button>
     </div>
 
-    <!-- ═══ ASSETS LIST ═══ -->
+    <!-- ASSETS LIST -->
     <div class="screen" id="screen-assets">
       <div class="search-wrap">
         <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="M12 12l2.5 2.5"/></svg>
         <input type="text" id="asset-search" placeholder="Search assets…" oninput="filterAssets()">
       </div>
+      <!-- Facility filter chips (built dynamically after login) -->
+      <div class="chips" id="facility-chips"></div>
+      <!-- Status/category filter chips -->
       <div class="chips" id="filter-chips">
-        <div class="chip active" data-filter="ALL" onclick="setFilter('ALL',this)">All</div>
-        <div class="chip" data-filter="AVAILABLE" onclick="setFilter('AVAILABLE',this)">Available</div>
-        <div class="chip" data-filter="CHECKED_OUT" onclick="setFilter('CHECKED_OUT',this)">Out</div>
-        <div class="chip" data-filter="MAINTENANCE" onclick="setFilter('MAINTENANCE',this)">Maint.</div>
-        <div class="chip" data-filter="TOOL" onclick="setFilter('TOOL',this)">Tools</div>
-        <div class="chip" data-filter="ELEC" onclick="setFilter('ELEC',this)">Electronics</div>
+        <div class="chip active" onclick="setFilter('ALL',this)">All</div>
+        <div class="chip" onclick="setFilter('AVAILABLE',this)">Available</div>
+        <div class="chip" onclick="setFilter('CHECKED_OUT',this)">Out</div>
+        <div class="chip" onclick="setFilter('MAINTENANCE',this)">Maint.</div>
+        <div class="chip" onclick="setFilter('TOOL',this)">Tools</div>
+        <div class="chip" onclick="setFilter('ELEC',this)">Electronics</div>
       </div>
       <div id="asset-list"><div class="loading-wrap"><div class="spinner"></div></div></div>
     </div>
 
-    <!-- ═══ CHECK OUT / IN ═══ -->
+    <!-- CHECK IN / OUT -->
     <div class="screen" id="screen-checkinout">
       <div class="scan-toggle">
         <button class="active" onclick="setScanMode('scan',this)">
@@ -347,7 +303,6 @@
           Type ID
         </button>
       </div>
-
       <div id="scan-btn-wrap">
         <button class="btn btn-ghost" onclick="openScanner('checkinout')">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="5" height="5" rx="1"/><rect x="12" y="1" width="5" height="5" rx="1"/><rect x="1" y="12" width="5" height="5" rx="1"/><rect x="3" y="3" width="1" height="1" fill="currentColor"/><rect x="14" y="3" width="1" height="1" fill="currentColor"/><rect x="3" y="14" width="1" height="1" fill="currentColor"/><path d="M12 9h5M9 12v5M12 12h2v2h-2z"/></svg>
@@ -361,7 +316,6 @@
         </div>
         <button class="btn btn-ghost btn-sm" onclick="lookupAssetForAction()" style="width:100%;margin-bottom:14px">Look up</button>
       </div>
-
       <div class="action-result" id="action-result">
         <div style="display:flex;justify-content:space-between;align-items:flex-start">
           <div>
@@ -372,7 +326,6 @@
           <span class="badge" id="res-badge"></span>
         </div>
       </div>
-
       <div id="action-form" style="display:none">
         <div class="field">
           <label>Your name</label>
@@ -403,15 +356,12 @@
       </div>
     </div>
 
-    <!-- ═══ ADD ASSET ═══ -->
+    <!-- ADD ASSET -->
     <div class="screen" id="screen-add">
-      <div class="card" style="margin-bottom:18px; border-color: rgba(79,124,255,0.3)">
-        <div style="font-size:12px; color:var(--muted)">New assets are automatically assigned an ID based on the facility + category you choose.</div>
+      <div class="card" style="margin-bottom:18px;border-color:rgba(79,124,255,0.3)">
+        <div style="font-size:12px;color:var(--muted)">New assets are automatically assigned an ID based on the facility + category you choose.</div>
       </div>
-      <div class="field">
-        <label>Asset name</label>
-        <input type="text" id="add-name" placeholder="e.g. Milwaukee Drill Kit">
-      </div>
+      <div class="field"><label>Asset name</label><input type="text" id="add-name" placeholder="e.g. Milwaukee Drill Kit"></div>
       <div class="field">
         <label>Category</label>
         <select id="add-category">
@@ -421,30 +371,32 @@
           <option value="OTHER">Other</option>
         </select>
       </div>
-      <div class="field">
-        <label>Home facility</label>
-        <select id="add-location"></select>
-      </div>
-      <div class="field">
-        <label>Description</label>
-        <input type="text" id="add-desc" placeholder="Model, color, serial #, etc.">
-      </div>
-      <div class="field">
-        <label>Notes</label>
-        <textarea id="add-notes" placeholder="Any additional details…"></textarea>
-      </div>
-      <div class="field">
-        <label>Added by</label>
-        <input type="text" id="add-by" placeholder="Your name">
-      </div>
+      <div class="field"><label>Home facility</label><select id="add-location"></select></div>
+      <div class="field"><label>Description</label><input type="text" id="add-desc" placeholder="Model, color, serial #, etc."></div>
+      <div class="field"><label>Notes</label><textarea id="add-notes" placeholder="Any additional details…"></textarea></div>
+      <div class="field"><label>Added by</label><input type="text" id="add-by" placeholder="Your name"></div>
       <button class="btn btn-primary" onclick="doAddAsset()">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>
         Add Asset
       </button>
     </div>
 
-    <!-- ═══ SETTINGS ═══ -->
+    <!-- SETTINGS -->
     <div class="screen" id="screen-settings">
+      <div id="user-info-section">
+        <div class="section-head" style="margin-top:0">Signed In As</div>
+        <div class="card" style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div id="settings-user-name" style="font-weight:600;font-size:16px"></div>
+              <div id="settings-user-facility" style="font-size:12px;color:var(--muted);margin-top:3px"></div>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="doLogout()">Sign Out</button>
+          </div>
+        </div>
+        <hr class="divider">
+      </div>
+
       <div class="section-head">Apps Script URL</div>
       <div class="field">
         <label>Web App URL</label>
@@ -452,15 +404,13 @@
       </div>
       <button class="btn btn-primary" onclick="saveConfig()">Save</button>
       <hr class="divider">
-      <div class="section-head">Your name (saved locally)</div>
-      <div class="field">
-        <input type="text" id="cfg-user" placeholder="Taylor">
-      </div>
+      <div class="section-head">Display Name</div>
+      <div class="field"><input type="text" id="cfg-user" placeholder="Your name"></div>
       <button class="btn btn-ghost" onclick="saveConfig()">Save name</button>
       <hr class="divider">
       <div class="section-head">First-time setup</div>
-      <div style="font-size:13px; color:var(--muted); margin-bottom:12px; line-height:1.6">
-        After deploying the Apps Script and entering the URL above, tap the button below to initialize your Google Sheet with the correct tabs and headers.
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.6">
+        After deploying the Apps Script and entering the URL above, tap the button below to initialize your Google Sheet with the correct tabs, headers, and default users.
       </div>
       <button class="btn btn-ghost" onclick="runSetup()">Initialize Sheets</button>
       <hr class="divider">
@@ -470,7 +420,7 @@
 
   </div>
 
-  <!-- Tabs -->
+  <!-- Bottom tabs -->
   <div id="tabs">
     <button class="tab active" onclick="showScreen('dashboard')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -491,13 +441,10 @@
   </div>
 </div>
 
-<!-- QR Scanner overlay -->
+<!-- QR Scanner -->
 <div id="qr-overlay">
   <video id="qr-video" playsinline autoplay muted></video>
-  <div id="qr-frame">
-    <div id="qr-box"></div>
-    <div id="qr-label">Point at QR code</div>
-  </div>
+  <div id="qr-frame"><div id="qr-box"></div><div id="qr-label">Point at QR code</div></div>
   <button id="qr-close-btn" onclick="closeScanner()">✕</button>
 </div>
 
@@ -510,36 +457,164 @@
   <div id="detail-body"></div>
 </div>
 
+<!-- Login overlay -->
+<div id="login-overlay">
+  <div class="login-box">
+    <div class="login-logo">ASSET//TRACK</div>
+    <div class="login-sub">Equipment Rental System</div>
+    <div class="field" style="text-align:left">
+      <label>Username</label>
+      <input type="text" id="login-username" placeholder="username" autocomplete="username"
+             onkeydown="if(event.key==='Enter')document.getElementById('login-pin').focus()">
+    </div>
+    <div class="field" style="text-align:left">
+      <label>PIN</label>
+      <input type="password" id="login-pin" placeholder="••••" maxlength="6" inputmode="numeric"
+             autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-error" id="login-error"></div>
+    <button class="btn btn-primary" id="login-btn" onclick="doLogin()">Sign In</button>
+    <div style="margin-top:16px">
+      <button onclick="showScreen('settings');document.getElementById('login-overlay').classList.add('hidden')"
+              style="background:none;border:none;color:var(--muted);font-size:12px;font-family:var(--mono);cursor:pointer">
+        Configure API URL
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
 <script>
-// ── Config ────────────────────────────────────────────────────
+// ── State ──────────────────────────────────────────────────────
 let API_URL  = localStorage.getItem('assetTrackerUrl')  || '';
 let USERNAME = localStorage.getItem('assetTrackerUser') || 'Staff';
 let allAssets = [];
+let allLocations = [];
 let currentFilter = 'ALL';
+let currentFacilityFilter = 'ALL';
 let currentAsset = null;
+let currentUser = null;
 let scannerContext = '';
 let scannerStream = null;
 let scannerInterval = null;
 
-// ── Init ──────────────────────────────────────────────────────
+// ── Init ───────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('cfg-url').value  = API_URL;
   document.getElementById('cfg-user').value = USERNAME;
   document.getElementById('cfg-display').textContent = API_URL || 'Not configured';
-  if (API_URL) {
-    loadDashboard();
-    loadLocations();
-    loadAssets();
-  } else {
-    showScreen('settings');
+
+  const stored = localStorage.getItem('atSession');
+  if (stored) {
+    try { currentUser = JSON.parse(stored); } catch(e) { currentUser = null; }
   }
+
+  if (!API_URL) {
+    document.getElementById('login-overlay').classList.add('hidden');
+    showScreen('settings');
+    return;
+  }
+
+  if (currentUser) {
+    document.getElementById('login-overlay').classList.add('hidden');
+    launchApp();
+  }
+  // else: login overlay stays visible (default state)
 });
 
-// ── Navigation ────────────────────────────────────────────────
+function launchApp() {
+  updateHeaderBadge();
+  updateSettingsUserInfo();
+  setDefaultFacilityFilter();
+  loadLocations().then(() => {
+    buildFacilityChips();
+    loadDashboard();
+    loadAssets();
+  });
+}
+
+// ── Auth ───────────────────────────────────────────────────────
+async function doLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const pin      = document.getElementById('login-pin').value.trim();
+  const errEl    = document.getElementById('login-error');
+  errEl.textContent = '';
+  if (!username || !pin) { errEl.textContent = 'Enter username and PIN'; return; }
+
+  const btn = document.getElementById('login-btn');
+  btn.textContent = 'Signing in…';
+  btn.disabled = true;
+
+  const data = await api({ action: 'login', username, pin });
+  btn.textContent = 'Sign In';
+  btn.disabled = false;
+
+  if (!data || data.error) {
+    errEl.textContent = data?.error || 'Invalid credentials';
+    return;
+  }
+
+  currentUser = data.user;
+  localStorage.setItem('atSession', JSON.stringify(currentUser));
+  document.getElementById('login-overlay').classList.add('hidden');
+  launchApp();
+}
+
+function doLogout() {
+  localStorage.removeItem('atSession');
+  currentUser = null;
+  allAssets = [];
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-pin').value = '';
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('login-overlay').classList.remove('hidden');
+}
+
+function updateHeaderBadge() {
+  if (!currentUser) return;
+  const badge = document.getElementById('header-user-badge');
+  badge.textContent = currentUser.role === 'ADMIN' ? 'ADMIN' : currentUser.facility;
+  badge.style.display = '';
+}
+
+function updateSettingsUserInfo() {
+  if (!currentUser) return;
+  document.getElementById('settings-user-name').textContent = currentUser.name;
+  document.getElementById('settings-user-facility').textContent =
+    currentUser.role === 'ADMIN' ? 'Administrator · All Facilities' : currentUser.facilityName;
+}
+
+// ── Facility chips ─────────────────────────────────────────────
+function setDefaultFacilityFilter() {
+  currentFacilityFilter = (!currentUser || currentUser.role === 'ADMIN') ? 'ALL' : currentUser.facility;
+}
+
+function buildFacilityChips() {
+  const container = document.getElementById('facility-chips');
+  if (!container || !allLocations.length) return;
+
+  const userFacility = currentUser && currentUser.role !== 'ADMIN' ? currentUser.facility : null;
+
+  let html = `<div class="chip ${currentFacilityFilter === 'ALL' ? 'active' : ''}" onclick="setFacilityFilter('ALL',this)">All Facilities</div>`;
+  allLocations.forEach(loc => {
+    const isMine = loc.code === userFacility;
+    const isActive = currentFacilityFilter === loc.code;
+    html += `<div class="chip ${isMine ? 'mine' : ''} ${isActive ? 'active' : ''}" onclick="setFacilityFilter('${loc.code}',this)">${isMine ? '★ ' : ''}${loc.name}</div>`;
+  });
+  container.innerHTML = html;
+}
+
+function setFacilityFilter(f, el) {
+  currentFacilityFilter = f;
+  document.querySelectorAll('#facility-chips .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderAssets();
+}
+
+// ── Navigation ─────────────────────────────────────────────────
 const titles = { dashboard:'Dashboard', assets:'Assets', checkinout:'Check In / Out', add:'Add Asset', settings:'Settings' };
 
 function showScreen(name) {
@@ -547,20 +622,19 @@ function showScreen(name) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
   document.getElementById('page-title').textContent = titles[name] || name;
-  const tabMap = { dashboard:0, assets:1, checkinout:2, add:3 };
   const tabs = document.querySelectorAll('.tab');
+  const tabMap = { dashboard:0, assets:1, checkinout:2, add:3 };
   if (tabMap[name] !== undefined) tabs[tabMap[name]].classList.add('active');
   if (name === 'dashboard') loadDashboard();
   if (name === 'assets') loadAssets();
   if (name === 'checkinout') resetActionForm();
 }
 
-// ── API calls ─────────────────────────────────────────────────
+// ── API ────────────────────────────────────────────────────────
 async function api(params) {
   if (!API_URL) { toast('Configure API URL first', 'error'); return null; }
-  const url = API_URL + '?' + new URLSearchParams(params);
   try {
-    const r = await fetch(url);
+    const r = await fetch(API_URL + '?' + new URLSearchParams(params));
     return await r.json();
   } catch(e) { toast('Network error', 'error'); return null; }
 }
@@ -577,14 +651,20 @@ async function apiPost(body) {
   } catch(e) { toast('Network error', 'error'); return null; }
 }
 
-// ── Dashboard ─────────────────────────────────────────────────
+// ── Dashboard ──────────────────────────────────────────────────
 async function loadDashboard() {
-  const data = await api({ action: 'getDashboard' });
+  const params = { action: 'getDashboard' };
+  if (currentUser && currentUser.role !== 'ADMIN') params.facility = currentUser.facility;
+  const data = await api(params);
   if (!data || data.error) return;
+
   document.getElementById('stat-total').textContent = data.total;
   document.getElementById('stat-avail').textContent = data.available;
   document.getElementById('stat-out').textContent   = data.checkedOut;
   document.getElementById('stat-maint').textContent = data.maintenance;
+
+  document.getElementById('dash-context').textContent =
+    (currentUser && currentUser.role !== 'ADMIN') ? currentUser.facilityName : 'All Facilities';
 
   const locDiv = document.getElementById('dash-locations');
   const locs = Object.entries(data.byLocation);
@@ -593,16 +673,16 @@ async function loadDashboard() {
     <div class="card" style="margin-bottom:8px">
       <div class="card-row">
         <span style="font-weight:600">${loc}</span>
-        <span style="font-size:12px; color:var(--muted)">${s.total} assets</span>
+        <span style="font-size:12px;color:var(--muted)">${s.total} assets</span>
       </div>
-      <div style="display:flex; gap:12px; margin-top:8px">
-        <span style="font-size:12px; color:var(--green)">✓ ${s.available} available</span>
-        <span style="font-size:12px; color:var(--warn)">→ ${s.checkedOut} out</span>
+      <div style="display:flex;gap:12px;margin-top:8px">
+        <span style="font-size:12px;color:var(--green)">✓ ${s.available} available</span>
+        <span style="font-size:12px;color:var(--warn)">→ ${s.checkedOut} out</span>
       </div>
     </div>`).join('');
 }
 
-// ── Assets list ───────────────────────────────────────────────
+// ── Assets list ────────────────────────────────────────────────
 async function loadAssets() {
   document.getElementById('asset-list').innerHTML = '<div class="loading-wrap"><div class="spinner"></div></div>';
   const data = await api({ action: 'getAssets' });
@@ -613,11 +693,20 @@ async function loadAssets() {
 
 function renderAssets() {
   const q = (document.getElementById('asset-search').value || '').toLowerCase();
-  let list = allAssets.filter(a => {
-    if (currentFilter === 'ALL') return true;
-    if (['AVAILABLE','CHECKED_OUT','MAINTENANCE'].includes(currentFilter)) return a.status === currentFilter;
-    return a.category === currentFilter;
-  }).filter(a => !q || a.id.toLowerCase().includes(q) || a.name.toLowerCase().includes(q) || (a.description||'').toLowerCase().includes(q));
+  const list = allAssets.filter(a => {
+    if (currentFacilityFilter !== 'ALL' &&
+        a.homeLocation !== currentFacilityFilter &&
+        a.currentLocation !== currentFacilityFilter) return false;
+    if (currentFilter !== 'ALL') {
+      if (['AVAILABLE','CHECKED_OUT','MAINTENANCE'].includes(currentFilter)) {
+        if (a.status !== currentFilter) return false;
+      } else {
+        if (a.category !== currentFilter) return false;
+      }
+    }
+    if (q && !a.id.toLowerCase().includes(q) && !a.name.toLowerCase().includes(q) && !(a.description||'').toLowerCase().includes(q)) return false;
+    return true;
+  });
 
   if (!list.length) { document.getElementById('asset-list').innerHTML = '<div class="empty">No assets match</div>'; return; }
   document.getElementById('asset-list').innerHTML = list.map(a => `
@@ -635,18 +724,20 @@ function renderAssets() {
 function filterAssets() { renderAssets(); }
 function setFilter(f, el) {
   currentFilter = f;
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('#filter-chips .chip').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
   renderAssets();
 }
 function statusLabel(s) { return s === 'CHECKED_OUT' ? 'Out' : s.charAt(0) + s.slice(1).toLowerCase(); }
 
-// ── Asset detail ──────────────────────────────────────────────
+// ── Asset detail ───────────────────────────────────────────────
 async function openDetail(assetId) {
-  const data = await api({ action: 'getAsset', id: assetId });
-  if (!data || data.error || !data.asset) { toast('Asset not found', 'error'); return; }
-  const a = data.asset;
-  const hist = await api({ action: 'getHistory', id: assetId });
+  const [assetData, histData] = await Promise.all([
+    api({ action: 'getAsset', id: assetId }),
+    api({ action: 'getHistory', id: assetId }),
+  ]);
+  if (!assetData || assetData.error || !assetData.asset) { toast('Asset not found', 'error'); return; }
+  const a = assetData.asset;
 
   document.getElementById('detail-title').textContent = a.id;
   document.getElementById('detail-body').innerHTML = `
@@ -674,7 +765,7 @@ async function openDetail(assetId) {
       <button class="btn btn-ghost btn-sm" onclick="closeDetail();showScreen('checkinout');loadAssetForAction('${a.id}')" style="flex:1">Full Action</button>
     </div>
     <div class="section-head">History</div>
-    <div class="timeline">${renderHistory(hist ? hist.history || [] : [])}</div>`;
+    <div class="timeline">${renderHistory(histData ? histData.history || [] : [])}</div>`;
 
   document.getElementById('detail-panel').classList.add('open');
 }
@@ -699,7 +790,7 @@ function renderHistory(history) {
 
 function closeDetail() { document.getElementById('detail-panel').classList.remove('open'); }
 
-// ── Check in/out ──────────────────────────────────────────────
+// ── Check in/out ───────────────────────────────────────────────
 let actionMode = 'scan';
 function setScanMode(mode, el) {
   actionMode = mode;
@@ -730,91 +821,87 @@ async function loadAssetForAction(id) {
 }
 
 function showAssetForAction(a) {
-  document.getElementById('res-id').textContent   = a.id;
-  document.getElementById('res-name').textContent = a.name;
+  document.getElementById('res-id').textContent     = a.id;
+  document.getElementById('res-name').textContent   = a.name;
   document.getElementById('res-detail').textContent = a.currentLocation + (a.checkedOutTo ? ' · out to: '+a.checkedOutTo : '');
   const badge = document.getElementById('res-badge');
   badge.textContent = statusLabel(a.status);
   badge.className = 'badge badge-' + a.status.toLowerCase();
   document.getElementById('action-result').classList.add('visible');
   document.getElementById('action-form').style.display = '';
-  document.getElementById('action-user').value = USERNAME;
+  document.getElementById('action-user').value = currentUser ? currentUser.name : USERNAME;
 
   const isOut = a.status === 'CHECKED_OUT';
-  document.getElementById('checkout-extra').style.display  = isOut ? 'none' : '';
-  document.getElementById('checkin-extra').style.display   = isOut ? '' : 'none';
+  document.getElementById('checkout-extra').style.display      = isOut ? 'none' : '';
+  document.getElementById('checkin-extra').style.display       = isOut ? '' : 'none';
   document.getElementById('action-checkin-btn').style.display  = isOut ? '' : 'none';
   document.getElementById('action-checkout-btn').style.display = isOut ? 'none' : '';
 }
 
 async function doCheckOut() {
   if (!currentAsset) return;
-  const body = {
+  const userName = document.getElementById('action-user').value || (currentUser ? currentUser.name : USERNAME);
+  const res = await apiPost({
     action: 'checkOut',
     assetId: currentAsset.id,
-    checkedOutTo: document.getElementById('action-who').value || USERNAME,
-    toLocation: document.getElementById('action-to-loc').value,
-    notes: document.getElementById('action-notes').value,
-    user: document.getElementById('action-user').value || USERNAME,
-  };
-  const res = await apiPost(body);
+    checkedOutTo: document.getElementById('action-who').value || userName,
+    toLocation:   document.getElementById('action-to-loc').value,
+    notes:        document.getElementById('action-notes').value,
+    user:         userName,
+  });
   if (res && res.success) { toast('Checked out ✓', 'success'); resetActionForm(); loadAssets(); }
   else toast(res?.error || 'Error', 'error');
 }
 
 async function doCheckIn() {
   if (!currentAsset) return;
-  const body = {
+  const userName = document.getElementById('action-user').value || (currentUser ? currentUser.name : USERNAME);
+  const res = await apiPost({
     action: 'checkIn',
-    assetId: currentAsset.id,
+    assetId:    currentAsset.id,
     toLocation: document.getElementById('action-in-loc').value,
-    notes: document.getElementById('action-notes').value,
-    user: document.getElementById('action-user').value || USERNAME,
-  };
-  const res = await apiPost(body);
+    notes:      document.getElementById('action-notes').value,
+    user:       userName,
+  });
   if (res && res.success) { toast('Checked in ✓', 'success'); resetActionForm(); loadAssets(); }
   else toast(res?.error || 'Error', 'error');
 }
 
 async function quickAction(assetId, direction) {
+  const userName = currentUser ? currentUser.name : USERNAME;
   const body = direction === 'in'
-    ? { action: 'checkIn',  assetId, user: USERNAME }
-    : { action: 'checkOut', assetId, checkedOutTo: USERNAME, user: USERNAME };
+    ? { action: 'checkIn',  assetId, user: userName }
+    : { action: 'checkOut', assetId, checkedOutTo: userName, user: userName };
   const res = await apiPost(body);
   if (res && res.success) { toast(direction === 'in' ? 'Checked in ✓' : 'Checked out ✓', 'success'); closeDetail(); loadAssets(); }
   else toast(res?.error || 'Error', 'error');
 }
 
-// ── Add asset ─────────────────────────────────────────────────
+// ── Add asset ──────────────────────────────────────────────────
 async function doAddAsset() {
-  const name = document.getElementById('add-name').value.trim();
-  const category = document.getElementById('add-category').value;
+  const name         = document.getElementById('add-name').value.trim();
+  const category     = document.getElementById('add-category').value;
   const homeLocation = document.getElementById('add-location').value;
   if (!name || !homeLocation) { toast('Name and facility required', 'error'); return; }
 
-  const body = {
-    action: 'addAsset',
-    name,
-    category,
-    homeLocation,
+  const res = await apiPost({
+    action: 'addAsset', name, category, homeLocation,
     description: document.getElementById('add-desc').value,
-    notes: document.getElementById('add-notes').value,
-    addedBy: document.getElementById('add-by').value || USERNAME,
-  };
-  const res = await apiPost(body);
+    notes:       document.getElementById('add-notes').value,
+    addedBy:     document.getElementById('add-by').value || (currentUser ? currentUser.name : USERNAME),
+  });
   if (res && res.success) {
     toast('Added: ' + res.assetId, 'success');
-    document.getElementById('add-name').value = '';
-    document.getElementById('add-desc').value = '';
-    document.getElementById('add-notes').value = '';
+    ['add-name','add-desc','add-notes'].forEach(id => document.getElementById(id).value = '');
     loadAssets();
   } else toast(res?.error || 'Error', 'error');
 }
 
-// ── Locations ─────────────────────────────────────────────────
+// ── Locations ──────────────────────────────────────────────────
 async function loadLocations() {
   const data = await api({ action: 'getLocations' });
   if (!data || !data.locations) return;
+  allLocations = data.locations;
   const opts = data.locations.map(l => `<option value="${l.code}">${l.name}</option>`).join('');
   ['add-location','action-to-loc','action-in-loc'].forEach(id => {
     const el = document.getElementById(id);
@@ -822,7 +909,7 @@ async function loadLocations() {
   });
 }
 
-// ── QR Scanner ────────────────────────────────────────────────
+// ── QR Scanner ─────────────────────────────────────────────────
 function openScanner(ctx) {
   scannerContext = ctx;
   document.getElementById('qr-overlay').classList.add('open');
@@ -845,14 +932,10 @@ function scanFrame(video) {
   if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
   const canvas = document.createElement('canvas');
   canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(video, 0, 0);
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  const imageData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
   const code = jsQR(imageData.data, imageData.width, imageData.height);
-  if (code && code.data) {
-    closeScanner();
-    handleScannedId(code.data.trim());
-  }
+  if (code && code.data) { closeScanner(); handleScannedId(code.data.trim()); }
 }
 
 function handleScannedId(id) {
@@ -863,7 +946,7 @@ function handleScannedId(id) {
   }
 }
 
-// ── Config ────────────────────────────────────────────────────
+// ── Config ─────────────────────────────────────────────────────
 function saveConfig() {
   API_URL  = document.getElementById('cfg-url').value.trim();
   USERNAME = document.getElementById('cfg-user').value.trim() || 'Staff';
@@ -871,7 +954,9 @@ function saveConfig() {
   localStorage.setItem('assetTrackerUser', USERNAME);
   document.getElementById('cfg-display').textContent = API_URL || 'Not configured';
   toast('Saved ✓', 'success');
-  if (API_URL) { loadDashboard(); loadLocations(); loadAssets(); }
+  if (API_URL && currentUser) {
+    loadLocations().then(() => { buildFacilityChips(); loadDashboard(); loadAssets(); });
+  }
 }
 
 async function runSetup() {
@@ -879,7 +964,7 @@ async function runSetup() {
   toast(res?.message || 'Done', 'success');
 }
 
-// ── Toast ─────────────────────────────────────────────────────
+// ── Toast ──────────────────────────────────────────────────────
 let toastTimer;
 function toast(msg, type) {
   const el = document.getElementById('toast');
@@ -891,4 +976,3 @@ function toast(msg, type) {
 </script>
 </body>
 </html>
-
