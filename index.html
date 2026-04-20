@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f1117">
+<title>Asset Tracker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
+
+  :root {
+    --bg:       #0f1117;
+    --surface:  #181c27;
+    --surface2: #1f2436;
+    --border:   #2a3050;
+    --text:     #e8ecf4;
+    --muted:    #6b7599;
+    --accent:   #4f7cff;
+    --accent2:  #38d9a9;
+    --warn:     #f0a05a;
+    --danger:   #f06a6a;
+    --green:    #38d9a9;
+    --mono:     'DM Mono', monospace;
+    --sans:     'DM Sans', sans-serif;
+    --radius:   14px;
+    --tab-h:    64px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%; width: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    overflow: hidden;
+  }
+
+  /* ── Layout ── */
+  #app { display: flex; flex-direction: column; height: 100dvh; }
+
+  #header {
+    padding: 14px 20px 10px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+    padding-top: max(14px, env(safe-area-inset-top));
+  }
+  #header .logo { font-family: var(--mono); font-size: 13px; color: var(--accent); letter-spacing: 0.08em; }
+  #header .page-title { font-size: 16px; font-weight: 600; color: var(--text); }
+  #header .hbtn {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--muted); border-radius: 8px; padding: 6px 12px;
+    font-size: 12px; font-family: var(--mono); cursor: pointer;
+  }
+
+  #screens { flex: 1; overflow: hidden; position: relative; }
+  .screen {
+    position: absolute; inset: 0; overflow-y: auto;
+    padding: 16px 16px calc(var(--tab-h) + 16px + env(safe-area-inset-bottom));
+    display: none;
+  }
+  .screen.active { display: block; }
+
+  /* ── Bottom tabs ── */
+  #tabs {
+    height: var(--tab-h);
+    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex; flex-shrink: 0;
+  }
+  .tab {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 3px;
+    cursor: pointer; color: var(--muted);
+    font-size: 10px; font-family: var(--mono);
+    transition: color 0.15s;
+    border: none; background: none;
+    padding-top: 2px;
+  }
+  .tab svg { width: 22px; height: 22px; }
+  .tab.active { color: var(--accent); }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px; margin-bottom: 10px;
+  }
+  .card-row { display: flex; justify-content: space-between; align-items: center; }
+  .card-label { font-size: 11px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; }
+  .card-value { font-size: 15px; font-weight: 500; }
+  .asset-id { font-family: var(--mono); font-size: 13px; color: var(--accent); }
+  .asset-name { font-size: 16px; font-weight: 600; margin: 4px 0 2px; }
+  .asset-loc { font-size: 12px; color: var(--muted); }
+
+  /* ── Status badges ── */
+  .badge {
+    font-size: 10px; font-family: var(--mono);
+    padding: 3px 8px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500;
+  }
+  .badge-available  { background: rgba(56,217,169,0.12); color: var(--green); border: 1px solid rgba(56,217,169,0.25); }
+  .badge-checked_out{ background: rgba(240,160,90,0.12);  color: var(--warn);  border: 1px solid rgba(240,160,90,0.25); }
+  .badge-maintenance{ background: rgba(240,106,106,0.12); color: var(--danger);border: 1px solid rgba(240,106,106,0.25); }
+
+  /* ── Stat tiles ── */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .stat-tile {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 14px;
+  }
+  .stat-num { font-size: 32px; font-weight: 600; font-family: var(--mono); line-height: 1; }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .stat-num.green  { color: var(--green); }
+  .stat-num.warn   { color: var(--warn); }
+  .stat-num.danger { color: var(--danger); }
+  .stat-num.accent { color: var(--accent); }
+
+  /* ── Inputs ── */
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 11px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .field input, .field select, .field textarea {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-family: var(--sans); font-size: 15px;
+    padding: 12px 14px; outline: none; appearance: none;
+    transition: border-color 0.15s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+  .field textarea { resize: none; height: 80px; }
+  .field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b7599' d='M1 1l5 5 5-5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+
+  /* ── Buttons ── */
+  .btn {
+    width: 100%; padding: 15px; border-radius: var(--radius);
+    font-size: 15px; font-weight: 600; cursor: pointer;
+    border: none; font-family: var(--sans); transition: opacity 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn:active { opacity: 0.75; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-success { background: var(--green); color: #0a1a14; }
+  .btn-warn    { background: var(--warn);  color: #1a0f00; }
+  .btn-danger  { background: var(--danger);color: #fff; }
+  .btn-ghost   { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn + .btn  { margin-top: 8px; }
+  .btn-sm { padding: 8px 14px; font-size: 13px; width: auto; border-radius: 8px; }
+
+  /* ── Search bar ── */
+  .search-wrap { position: relative; margin-bottom: 14px; }
+  .search-wrap input {
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; color: var(--text); font-size: 15px;
+    padding: 12px 14px 12px 42px; outline: none;
+  }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+
+  /* ── Section header ── */
+  .section-head { font-size: 11px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin: 18px 0 8px; }
+
+  /* ── QR overlay ── */
+  #qr-overlay {
+    position: fixed; inset: 0; background: #000;
+    z-index: 100; display: none; flex-direction: column;
+  }
+  #qr-overlay.open { display: flex; }
+  #qr-video { width: 100%; height: 100%; object-fit: cover; }
+  #qr-frame {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; pointer-events: none;
+  }
+  #qr-box {
+    width: 240px; height: 240px; border-radius: 20px;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 9999px rgba(0,0,0,0.55);
+  }
+  #qr-label {
+    margin-top: 20px; color: #fff; font-size: 14px;
+    background: rgba(0,0,0,0.5); padding: 6px 16px; border-radius: 20px;
+  }
+  #qr-close-btn {
+    position: absolute; top: max(20px, env(safe-area-inset-top)); right: 20px;
+    background: rgba(255,255,255,0.15); border: none; color: #fff;
+    width: 40px; height: 40px; border-radius: 20px; font-size: 20px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ── Asset detail panel ── */
+  #detail-panel {
+    position: fixed; inset: 0; background: var(--bg); z-index: 50;
+    display: none; flex-direction: column; overflow-y: auto;
+    padding: 0 0 40px;
+  }
+  #detail-panel.open { display: flex; }
+  #detail-header {
+    padding: 16px 16px 12px; padding-top: max(16px, env(safe-area-inset-top));
+    background: var(--bg); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+  }
+  #detail-back {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); border-radius: 8px; padding: 6px 12px;
+    font-size: 13px; cursor: pointer;
+  }
+  #detail-body { padding: 16px; }
+
+  /* ── History timeline ── */
+  .timeline { margin-top: 6px; }
+  .tx-item { display: flex; gap: 12px; padding-bottom: 16px; position: relative; }
+  .tx-item:not(:last-child)::before {
+    content: ''; position: absolute; left: 11px; top: 22px;
+    width: 2px; bottom: 0; background: var(--border);
+  }
+  .tx-dot {
+    width: 24px; height: 24px; border-radius: 12px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 11px;
+  }
+  .tx-dot.checkout  { background: rgba(240,160,90,0.2);  color: var(--warn);   border: 1px solid rgba(240,160,90,0.3); }
+  .tx-dot.checkin   { background: rgba(56,217,169,0.2);  color: var(--green);  border: 1px solid rgba(56,217,169,0.3); }
+  .tx-dot.added     { background: rgba(79,124,255,0.2);  color: var(--accent); border: 1px solid rgba(79,124,255,0.3); }
+  .tx-dot.transfer  { background: rgba(200,200,255,0.1); color: var(--muted);  border: 1px solid var(--border); }
+  .tx-dot.note      { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+  .tx-info { flex: 1; padding-top: 2px; }
+  .tx-action { font-size: 13px; font-weight: 500; }
+  .tx-meta   { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed; bottom: calc(var(--tab-h) + 16px + env(safe-area-inset-bottom));
+    left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); padding: 10px 20px; border-radius: 20px;
+    font-size: 13px; font-family: var(--mono);
+    opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none;
+    white-space: nowrap; z-index: 200;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.success { border-color: rgba(56,217,169,0.4); color: var(--green); }
+  #toast.error   { border-color: rgba(240,106,106,0.4); color: var(--danger); }
+
+  /* ── Config screen ── */
+  .config-url { font-family: var(--mono); font-size: 12px; word-break: break-all; color: var(--muted); }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+
+  /* ── Loading ── */
+  .spinner {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid var(--border); border-top-color: var(--accent);
+    animation: spin 0.7s linear infinite; display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-wrap { display: flex; justify-content: center; padding: 40px; }
+
+  .empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
+
+  /* ── Filter chips ── */
+  .chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 10px; scrollbar-width: none; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip {
+    flex-shrink: 0; padding: 5px 12px; border-radius: 20px;
+    background: var(--surface2); border: 1px solid var(--border);
+    font-size: 12px; font-family: var(--mono); color: var(--muted);
+    cursor: pointer; white-space: nowrap;
+  }
+  .chip.active { background: rgba(79,124,255,0.15); border-color: var(--accent); color: var(--accent); }
+
+  /* ── Scan/manual toggle ── */
+  .scan-toggle { display: flex; gap: 8px; margin-bottom: 16px; }
+  .scan-toggle button {
+    flex: 1; padding: 10px; border-radius: 10px; font-size: 13px;
+    font-family: var(--mono); cursor: pointer; border: 1px solid var(--border);
+    background: var(--surface2); color: var(--muted); transition: all 0.15s;
+  }
+  .scan-toggle button.active { background: rgba(79,124,255,0.15); border-color: var(--accent); color: var(--accent); }
+
+  .action-result {
+    background: var(--surface); border: 1px solid var(--accent);
+    border-radius: var(--radius); padding: 16px; margin-bottom: 14px;
+    display: none;
+  }
+  .action-result.visible { display: block; }
+  .result-id { font-family: var(--mono); font-size: 13px; color: var(--accent); }
+  .result-name { font-size: 17px; font-weight: 600; margin: 4px 0; }
+  .result-detail { font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Header -->
+  <div id="header">
+    <span class="logo">ASSET//TRACK</span>
+    <span class="page-title" id="page-title">Dashboard</span>
+    <button class="hbtn" onclick="showScreen('settings')">CFG</button>
+  </div>
+
+  <!-- Screens -->
+  <div id="screens">
+
+    <!-- ═══ DASHBOARD ═══ -->
+    <div class="screen active" id="screen-dashboard">
+      <div class="stats-grid">
+        <div class="stat-tile"><div class="stat-num accent" id="stat-total">—</div><div class="stat-label">Total assets</div></div>
+        <div class="stat-tile"><div class="stat-num green"  id="stat-avail">—</div><div class="stat-label">Available</div></div>
+        <div class="stat-tile"><div class="stat-num warn"   id="stat-out">—</div><div class="stat-label">Checked out</div></div>
+        <div class="stat-tile"><div class="stat-num danger" id="stat-maint">—</div><div class="stat-label">Maintenance</div></div>
+      </div>
+      <div class="section-head">By facility</div>
+      <div id="dash-locations"></div>
+      <button class="btn btn-ghost" style="margin-top:6px" onclick="loadDashboard()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13.65 2.35A8 8 0 1 0 15 8"/><path d="M11 2h4V6"/></svg>
+        Refresh
+      </button>
+    </div>
+
+    <!-- ═══ ASSETS LIST ═══ -->
+    <div class="screen" id="screen-assets">
+      <div class="search-wrap">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="M12 12l2.5 2.5"/></svg>
+        <input type="text" id="asset-search" placeholder="Search assets…" oninput="filterAssets()">
+      </div>
+      <div class="chips" id="filter-chips">
+        <div class="chip active" data-filter="ALL" onclick="setFilter('ALL',this)">All</div>
+        <div class="chip" data-filter="AVAILABLE" onclick="setFilter('AVAILABLE',this)">Available</div>
+        <div class="chip" data-filter="CHECKED_OUT" onclick="setFilter('CHECKED_OUT',this)">Out</div>
+        <div class="chip" data-filter="MAINTENANCE" onclick="setFilter('MAINTENANCE',this)">Maint.</div>
+        <div class="chip" data-filter="TOOL" onclick="setFilter('TOOL',this)">Tools</div>
+        <div class="chip" data-filter="ELEC" onclick="setFilter('ELEC',this)">Electronics</div>
+      </div>
+      <div id="asset-list"><div class="loading-wrap"><div class="spinner"></div></div></div>
+    </div>
+
+    <!-- ═══ CHECK OUT / IN ═══ -->
+    <div class="screen" id="screen-checkinout">
+      <div class="scan-toggle">
+        <button class="active" onclick="setScanMode('scan',this)">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="display:inline;vertical-align:middle;margin-right:4px"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>
+          Scan QR
+        </button>
+        <button onclick="setScanMode('manual',this)">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="display:inline;vertical-align:middle;margin-right:4px"><path d="M2 8h12M2 4h12M2 12h8"/></svg>
+          Type ID
+        </button>
+      </div>
+
+      <div id="scan-btn-wrap">
+        <button class="btn btn-ghost" onclick="openScanner('checkinout')">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="5" height="5" rx="1"/><rect x="12" y="1" width="5" height="5" rx="1"/><rect x="1" y="12" width="5" height="5" rx="1"/><rect x="3" y="3" width="1" height="1" fill="currentColor"/><rect x="14" y="3" width="1" height="1" fill="currentColor"/><rect x="3" y="14" width="1" height="1" fill="currentColor"/><path d="M12 9h5M9 12v5M12 12h2v2h-2z"/></svg>
+          Open Camera Scanner
+        </button>
+      </div>
+      <div id="manual-id-wrap" style="display:none">
+        <div class="field">
+          <label>Asset ID</label>
+          <input type="text" id="manual-asset-id" placeholder="e.g. CP-TOOL-0001" style="font-family:var(--mono)">
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="lookupAssetForAction()" style="width:100%;margin-bottom:14px">Look up</button>
+      </div>
+
+      <div class="action-result" id="action-result">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div class="result-id" id="res-id"></div>
+            <div class="result-name" id="res-name"></div>
+            <div class="result-detail" id="res-detail"></div>
+          </div>
+          <span class="badge" id="res-badge"></span>
+        </div>
+      </div>
+
+      <div id="action-form" style="display:none">
+        <div class="field">
+          <label>Your name</label>
+          <input type="text" id="action-user" placeholder="Staff name">
+        </div>
+        <div id="checkout-extra">
+          <div class="field">
+            <label>Checking out to</label>
+            <input type="text" id="action-who" placeholder="Name or room #">
+          </div>
+          <div class="field">
+            <label>Taking to location</label>
+            <select id="action-to-loc"></select>
+          </div>
+        </div>
+        <div id="checkin-extra" style="display:none">
+          <div class="field">
+            <label>Returning to location</label>
+            <select id="action-in-loc"></select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Notes (optional)</label>
+          <input type="text" id="action-notes" placeholder="Any notes…">
+        </div>
+        <button class="btn btn-success" id="action-checkin-btn"  style="display:none" onclick="doCheckIn()">Check In</button>
+        <button class="btn btn-warn"    id="action-checkout-btn" style="display:none" onclick="doCheckOut()">Check Out</button>
+      </div>
+    </div>
+
+    <!-- ═══ ADD ASSET ═══ -->
+    <div class="screen" id="screen-add">
+      <div class="card" style="margin-bottom:18px; border-color: rgba(79,124,255,0.3)">
+        <div style="font-size:12px; color:var(--muted)">New assets are automatically assigned an ID based on the facility + category you choose.</div>
+      </div>
+      <div class="field">
+        <label>Asset name</label>
+        <input type="text" id="add-name" placeholder="e.g. Milwaukee Drill Kit">
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <select id="add-category">
+          <option value="TOOL">Tool / Equipment</option>
+          <option value="ELEC">Electronics / AV</option>
+          <option value="FURN">Furniture / Fixture</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Home facility</label>
+        <select id="add-location"></select>
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <input type="text" id="add-desc" placeholder="Model, color, serial #, etc.">
+      </div>
+      <div class="field">
+        <label>Notes</label>
+        <textarea id="add-notes" placeholder="Any additional details…"></textarea>
+      </div>
+      <div class="field">
+        <label>Added by</label>
+        <input type="text" id="add-by" placeholder="Your name">
+      </div>
+      <button class="btn btn-primary" onclick="doAddAsset()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>
+        Add Asset
+      </button>
+    </div>
+
+    <!-- ═══ SETTINGS ═══ -->
+    <div class="screen" id="screen-settings">
+      <div class="section-head">Apps Script URL</div>
+      <div class="field">
+        <label>Web App URL</label>
+        <input type="url" id="cfg-url" placeholder="https://script.google.com/macros/s/…/exec">
+      </div>
+      <button class="btn btn-primary" onclick="saveConfig()">Save</button>
+      <hr class="divider">
+      <div class="section-head">Your name (saved locally)</div>
+      <div class="field">
+        <input type="text" id="cfg-user" placeholder="Taylor">
+      </div>
+      <button class="btn btn-ghost" onclick="saveConfig()">Save name</button>
+      <hr class="divider">
+      <div class="section-head">First-time setup</div>
+      <div style="font-size:13px; color:var(--muted); margin-bottom:12px; line-height:1.6">
+        After deploying the Apps Script and entering the URL above, tap the button below to initialize your Google Sheet with the correct tabs and headers.
+      </div>
+      <button class="btn btn-ghost" onclick="runSetup()">Initialize Sheets</button>
+      <hr class="divider">
+      <div class="section-head">Current URL</div>
+      <div class="config-url" id="cfg-display">Not configured</div>
+    </div>
+
+  </div>
+
+  <!-- Tabs -->
+  <div id="tabs">
+    <button class="tab active" onclick="showScreen('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dash
+    </button>
+    <button class="tab" onclick="showScreen('assets')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+      Assets
+    </button>
+    <button class="tab" onclick="showScreen('checkinout')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 16l-4-4 4-4"/><path d="M3 12h11"/><path d="M17 8l4 4-4 4"/><path d="M21 12H10"/></svg>
+      In/Out
+    </button>
+    <button class="tab" onclick="showScreen('add')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+      Add
+    </button>
+  </div>
+</div>
+
+<!-- QR Scanner overlay -->
+<div id="qr-overlay">
+  <video id="qr-video" playsinline autoplay muted></video>
+  <div id="qr-frame">
+    <div id="qr-box"></div>
+    <div id="qr-label">Point at QR code</div>
+  </div>
+  <button id="qr-close-btn" onclick="closeScanner()">✕</button>
+</div>
+
+<!-- Asset detail panel -->
+<div id="detail-panel">
+  <div id="detail-header">
+    <button id="detail-back" onclick="closeDetail()">← Back</button>
+    <span id="detail-title" style="font-weight:600"></span>
+  </div>
+  <div id="detail-body"></div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script>
+// ── Config ────────────────────────────────────────────────────
+let API_URL  = localStorage.getItem('assetTrackerUrl')  || '';
+let USERNAME = localStorage.getItem('assetTrackerUser') || 'Staff';
+let allAssets = [];
+let currentFilter = 'ALL';
+let currentAsset = null;
+let scannerContext = '';
+let scannerStream = null;
+let scannerInterval = null;
+
+// ── Init ──────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('cfg-url').value  = API_URL;
+  document.getElementById('cfg-user').value = USERNAME;
+  document.getElementById('cfg-display').textContent = API_URL || 'Not configured';
+  if (API_URL) {
+    loadDashboard();
+    loadLocations();
+    loadAssets();
+  } else {
+    showScreen('settings');
+  }
+});
+
+// ── Navigation ────────────────────────────────────────────────
+const titles = { dashboard:'Dashboard', assets:'Assets', checkinout:'Check In / Out', add:'Add Asset', settings:'Settings' };
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.getElementById('page-title').textContent = titles[name] || name;
+  const tabMap = { dashboard:0, assets:1, checkinout:2, add:3 };
+  const tabs = document.querySelectorAll('.tab');
+  if (tabMap[name] !== undefined) tabs[tabMap[name]].classList.add('active');
+  if (name === 'dashboard') loadDashboard();
+  if (name === 'assets') loadAssets();
+  if (name === 'checkinout') resetActionForm();
+}
+
+// ── API calls ─────────────────────────────────────────────────
+async function api(params) {
+  if (!API_URL) { toast('Configure API URL first', 'error'); return null; }
+  const url = API_URL + '?' + new URLSearchParams(params);
+  try {
+    const r = await fetch(url);
+    return await r.json();
+  } catch(e) { toast('Network error', 'error'); return null; }
+}
+
+async function apiPost(body) {
+  if (!API_URL) { toast('Configure API URL first', 'error'); return null; }
+  try {
+    const r = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(body),
+    });
+    return await r.json();
+  } catch(e) { toast('Network error', 'error'); return null; }
+}
+
+// ── Dashboard ─────────────────────────────────────────────────
+async function loadDashboard() {
+  const data = await api({ action: 'getDashboard' });
+  if (!data || data.error) return;
+  document.getElementById('stat-total').textContent = data.total;
+  document.getElementById('stat-avail').textContent = data.available;
+  document.getElementById('stat-out').textContent   = data.checkedOut;
+  document.getElementById('stat-maint').textContent = data.maintenance;
+
+  const locDiv = document.getElementById('dash-locations');
+  const locs = Object.entries(data.byLocation);
+  if (!locs.length) { locDiv.innerHTML = '<div class="empty">No assets yet</div>'; return; }
+  locDiv.innerHTML = locs.map(([loc, s]) => `
+    <div class="card" style="margin-bottom:8px">
+      <div class="card-row">
+        <span style="font-weight:600">${loc}</span>
+        <span style="font-size:12px; color:var(--muted)">${s.total} assets</span>
+      </div>
+      <div style="display:flex; gap:12px; margin-top:8px">
+        <span style="font-size:12px; color:var(--green)">✓ ${s.available} available</span>
+        <span style="font-size:12px; color:var(--warn)">→ ${s.checkedOut} out</span>
+      </div>
+    </div>`).join('');
+}
+
+// ── Assets list ───────────────────────────────────────────────
+async function loadAssets() {
+  document.getElementById('asset-list').innerHTML = '<div class="loading-wrap"><div class="spinner"></div></div>';
+  const data = await api({ action: 'getAssets' });
+  if (!data || data.error) { document.getElementById('asset-list').innerHTML = '<div class="empty">Could not load assets</div>'; return; }
+  allAssets = data.assets || [];
+  renderAssets();
+}
+
+function renderAssets() {
+  const q = (document.getElementById('asset-search').value || '').toLowerCase();
+  let list = allAssets.filter(a => {
+    if (currentFilter === 'ALL') return true;
+    if (['AVAILABLE','CHECKED_OUT','MAINTENANCE'].includes(currentFilter)) return a.status === currentFilter;
+    return a.category === currentFilter;
+  }).filter(a => !q || a.id.toLowerCase().includes(q) || a.name.toLowerCase().includes(q) || (a.description||'').toLowerCase().includes(q));
+
+  if (!list.length) { document.getElementById('asset-list').innerHTML = '<div class="empty">No assets match</div>'; return; }
+  document.getElementById('asset-list').innerHTML = list.map(a => `
+    <div class="card" onclick="openDetail('${a.id}')">
+      <div class="card-row" style="margin-bottom:6px">
+        <span class="asset-id">${a.id}</span>
+        <span class="badge badge-${a.status.toLowerCase()}">${statusLabel(a.status)}</span>
+      </div>
+      <div class="asset-name">${a.name}</div>
+      <div class="asset-loc">${a.currentLocation}${a.homeLocation !== a.currentLocation ? ' · home: '+a.homeLocation : ''}</div>
+      ${a.checkedOutTo ? `<div style="font-size:12px;color:var(--warn);margin-top:4px">Out to: ${a.checkedOutTo}</div>` : ''}
+    </div>`).join('');
+}
+
+function filterAssets() { renderAssets(); }
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderAssets();
+}
+function statusLabel(s) { return s === 'CHECKED_OUT' ? 'Out' : s.charAt(0) + s.slice(1).toLowerCase(); }
+
+// ── Asset detail ──────────────────────────────────────────────
+async function openDetail(assetId) {
+  const data = await api({ action: 'getAsset', id: assetId });
+  if (!data || data.error || !data.asset) { toast('Asset not found', 'error'); return; }
+  const a = data.asset;
+  const hist = await api({ action: 'getHistory', id: assetId });
+
+  document.getElementById('detail-title').textContent = a.id;
+  document.getElementById('detail-body').innerHTML = `
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-row" style="margin-bottom:8px">
+        <div>
+          <div class="asset-id">${a.id}</div>
+          <div class="asset-name">${a.name}</div>
+          <div class="asset-loc">${a.category}</div>
+        </div>
+        <span class="badge badge-${a.status.toLowerCase()}">${statusLabel(a.status)}</span>
+      </div>
+      ${a.description ? `<div style="font-size:13px;color:var(--muted);margin-top:4px">${a.description}</div>` : ''}
+      <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div><div class="card-label">Home</div><div style="font-size:13px;margin-top:2px">${a.homeLocation}</div></div>
+        <div><div class="card-label">Current</div><div style="font-size:13px;margin-top:2px">${a.currentLocation}</div></div>
+        ${a.checkedOutTo ? `<div><div class="card-label">Out to</div><div style="font-size:13px;margin-top:2px;color:var(--warn)">${a.checkedOutTo}</div></div>` : ''}
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      ${a.status === 'AVAILABLE'
+        ? `<button class="btn btn-warn btn-sm" onclick="quickAction('${a.id}','out')" style="flex:1">Check Out</button>`
+        : `<button class="btn btn-success btn-sm" onclick="quickAction('${a.id}','in')" style="flex:1">Check In</button>`}
+      <button class="btn btn-ghost btn-sm" onclick="closeDetail();showScreen('checkinout');loadAssetForAction('${a.id}')" style="flex:1">Full Action</button>
+    </div>
+    <div class="section-head">History</div>
+    <div class="timeline">${renderHistory(hist ? hist.history || [] : [])}</div>`;
+
+  document.getElementById('detail-panel').classList.add('open');
+}
+
+function renderHistory(history) {
+  if (!history.length) return '<div class="empty">No history yet</div>';
+  return history.map(tx => {
+    const dotClass = { CHECK_OUT:'checkout', CHECK_IN:'checkin', ADDED:'added', TRANSFER:'transfer', NOTE:'note' }[tx.action] || 'note';
+    const icon = { CHECK_OUT:'→', CHECK_IN:'←', ADDED:'+', TRANSFER:'⇄', NOTE:'·' }[tx.action] || '·';
+    const dt = tx.timestamp ? new Date(tx.timestamp).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '';
+    const loc = tx.fromLocation && tx.toLocation && tx.fromLocation !== tx.toLocation ? ` · ${tx.fromLocation} → ${tx.toLocation}` : '';
+    return `<div class="tx-item">
+      <div class="tx-dot ${dotClass}">${icon}</div>
+      <div class="tx-info">
+        <div class="tx-action">${tx.action.replace('_',' ')} ${tx.user ? '· '+tx.user : ''}</div>
+        <div class="tx-meta">${dt}${loc}</div>
+        ${tx.notes ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">${tx.notes}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function closeDetail() { document.getElementById('detail-panel').classList.remove('open'); }
+
+// ── Check in/out ──────────────────────────────────────────────
+let actionMode = 'scan';
+function setScanMode(mode, el) {
+  actionMode = mode;
+  document.querySelectorAll('.scan-toggle button').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('scan-btn-wrap').style.display  = mode === 'scan'   ? '' : 'none';
+  document.getElementById('manual-id-wrap').style.display = mode === 'manual' ? '' : 'none';
+}
+
+function resetActionForm() {
+  document.getElementById('action-result').classList.remove('visible');
+  document.getElementById('action-form').style.display = 'none';
+  document.getElementById('manual-asset-id').value = '';
+  currentAsset = null;
+}
+
+async function lookupAssetForAction() {
+  const id = document.getElementById('manual-asset-id').value.trim();
+  if (!id) return;
+  await loadAssetForAction(id);
+}
+
+async function loadAssetForAction(id) {
+  const data = await api({ action: 'getAsset', id });
+  if (!data || data.error || !data.asset) { toast('Asset not found', 'error'); return; }
+  currentAsset = data.asset;
+  showAssetForAction(currentAsset);
+}
+
+function showAssetForAction(a) {
+  document.getElementById('res-id').textContent   = a.id;
+  document.getElementById('res-name').textContent = a.name;
+  document.getElementById('res-detail').textContent = a.currentLocation + (a.checkedOutTo ? ' · out to: '+a.checkedOutTo : '');
+  const badge = document.getElementById('res-badge');
+  badge.textContent = statusLabel(a.status);
+  badge.className = 'badge badge-' + a.status.toLowerCase();
+  document.getElementById('action-result').classList.add('visible');
+  document.getElementById('action-form').style.display = '';
+  document.getElementById('action-user').value = USERNAME;
+
+  const isOut = a.status === 'CHECKED_OUT';
+  document.getElementById('checkout-extra').style.display  = isOut ? 'none' : '';
+  document.getElementById('checkin-extra').style.display   = isOut ? '' : 'none';
+  document.getElementById('action-checkin-btn').style.display  = isOut ? '' : 'none';
+  document.getElementById('action-checkout-btn').style.display = isOut ? 'none' : '';
+}
+
+async function doCheckOut() {
+  if (!currentAsset) return;
+  const body = {
+    action: 'checkOut',
+    assetId: currentAsset.id,
+    checkedOutTo: document.getElementById('action-who').value || USERNAME,
+    toLocation: document.getElementById('action-to-loc').value,
+    notes: document.getElementById('action-notes').value,
+    user: document.getElementById('action-user').value || USERNAME,
+  };
+  const res = await apiPost(body);
+  if (res && res.success) { toast('Checked out ✓', 'success'); resetActionForm(); loadAssets(); }
+  else toast(res?.error || 'Error', 'error');
+}
+
+async function doCheckIn() {
+  if (!currentAsset) return;
+  const body = {
+    action: 'checkIn',
+    assetId: currentAsset.id,
+    toLocation: document.getElementById('action-in-loc').value,
+    notes: document.getElementById('action-notes').value,
+    user: document.getElementById('action-user').value || USERNAME,
+  };
+  const res = await apiPost(body);
+  if (res && res.success) { toast('Checked in ✓', 'success'); resetActionForm(); loadAssets(); }
+  else toast(res?.error || 'Error', 'error');
+}
+
+async function quickAction(assetId, direction) {
+  const body = direction === 'in'
+    ? { action: 'checkIn',  assetId, user: USERNAME }
+    : { action: 'checkOut', assetId, checkedOutTo: USERNAME, user: USERNAME };
+  const res = await apiPost(body);
+  if (res && res.success) { toast(direction === 'in' ? 'Checked in ✓' : 'Checked out ✓', 'success'); closeDetail(); loadAssets(); }
+  else toast(res?.error || 'Error', 'error');
+}
+
+// ── Add asset ─────────────────────────────────────────────────
+async function doAddAsset() {
+  const name = document.getElementById('add-name').value.trim();
+  const category = document.getElementById('add-category').value;
+  const homeLocation = document.getElementById('add-location').value;
+  if (!name || !homeLocation) { toast('Name and facility required', 'error'); return; }
+
+  const body = {
+    action: 'addAsset',
+    name,
+    category,
+    homeLocation,
+    description: document.getElementById('add-desc').value,
+    notes: document.getElementById('add-notes').value,
+    addedBy: document.getElementById('add-by').value || USERNAME,
+  };
+  const res = await apiPost(body);
+  if (res && res.success) {
+    toast('Added: ' + res.assetId, 'success');
+    document.getElementById('add-name').value = '';
+    document.getElementById('add-desc').value = '';
+    document.getElementById('add-notes').value = '';
+    loadAssets();
+  } else toast(res?.error || 'Error', 'error');
+}
+
+// ── Locations ─────────────────────────────────────────────────
+async function loadLocations() {
+  const data = await api({ action: 'getLocations' });
+  if (!data || !data.locations) return;
+  const opts = data.locations.map(l => `<option value="${l.code}">${l.name}</option>`).join('');
+  ['add-location','action-to-loc','action-in-loc'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = opts;
+  });
+}
+
+// ── QR Scanner ────────────────────────────────────────────────
+function openScanner(ctx) {
+  scannerContext = ctx;
+  document.getElementById('qr-overlay').classList.add('open');
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(stream => {
+    scannerStream = stream;
+    const video = document.getElementById('qr-video');
+    video.srcObject = stream;
+    video.play();
+    scannerInterval = setInterval(() => scanFrame(video), 200);
+  }).catch(() => { toast('Camera access denied', 'error'); closeScanner(); });
+}
+
+function closeScanner() {
+  clearInterval(scannerInterval);
+  if (scannerStream) { scannerStream.getTracks().forEach(t => t.stop()); scannerStream = null; }
+  document.getElementById('qr-overlay').classList.remove('open');
+}
+
+function scanFrame(video) {
+  if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0);
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const code = jsQR(imageData.data, imageData.width, imageData.height);
+  if (code && code.data) {
+    closeScanner();
+    handleScannedId(code.data.trim());
+  }
+}
+
+function handleScannedId(id) {
+  if (scannerContext === 'checkinout') {
+    showScreen('checkinout');
+    document.getElementById('manual-asset-id').value = id;
+    loadAssetForAction(id);
+  }
+}
+
+// ── Config ────────────────────────────────────────────────────
+function saveConfig() {
+  API_URL  = document.getElementById('cfg-url').value.trim();
+  USERNAME = document.getElementById('cfg-user').value.trim() || 'Staff';
+  localStorage.setItem('assetTrackerUrl',  API_URL);
+  localStorage.setItem('assetTrackerUser', USERNAME);
+  document.getElementById('cfg-display').textContent = API_URL || 'Not configured';
+  toast('Saved ✓', 'success');
+  if (API_URL) { loadDashboard(); loadLocations(); loadAssets(); }
+}
+
+async function runSetup() {
+  const res = await api({ action: 'setup' });
+  toast(res?.message || 'Done', 'success');
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show' + (type ? ' '+type : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = '', 2800);
+}
+</script>
+</body>
+</html>
