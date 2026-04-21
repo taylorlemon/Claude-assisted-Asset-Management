@@ -259,6 +259,24 @@
     font-family: var(--mono); padding: 0 3px;
   }
 
+  /* ── Edit panel ── */
+  #edit-panel {
+    position: fixed; inset: 0; background: var(--bg); z-index: 55;
+    display: none; flex-direction: column; overflow-y: auto; padding: 0 0 40px;
+  }
+  #edit-panel.open { display: flex; }
+  #edit-header {
+    padding: 16px 16px 12px; padding-top: max(16px, env(safe-area-inset-top));
+    background: var(--bg); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+  }
+  #edit-back {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); border-radius: 8px; padding: 6px 12px;
+    font-size: 13px; cursor: pointer;
+  }
+  #edit-body { padding: 16px; }
+
   /* ── QR Label modal ── */
   #qr-modal {
     position: fixed; inset: 0; background: rgba(0,0,0,0.75);
@@ -542,6 +560,33 @@
     <span id="detail-title" style="font-weight:600"></span>
   </div>
   <div id="detail-body"></div>
+</div>
+
+<!-- Edit Asset panel -->
+<div id="edit-panel">
+  <div id="edit-header">
+    <button id="edit-back" onclick="closeEditPanel()">← Back</button>
+    <span style="font-weight:600">Edit Asset</span>
+  </div>
+  <div id="edit-body">
+    <div class="card" style="margin-bottom:18px;border-color:rgba(79,124,255,0.3)">
+      <div style="font-size:12px;color:var(--muted)">All changes are permanently recorded in the asset's history.</div>
+    </div>
+    <div class="field"><label>Asset name</label><input type="text" id="edit-name"></div>
+    <div class="field">
+      <label>Category</label>
+      <select id="edit-category">
+        <option value="TOOL">Tool / Equipment</option>
+        <option value="ELEC">Electronics / AV</option>
+        <option value="FURN">Furniture / Fixture</option>
+        <option value="OTHER">Other</option>
+      </select>
+    </div>
+    <div class="field"><label>Description</label><input type="text" id="edit-desc" placeholder="Model, color, serial #, etc."></div>
+    <div class="field"><label>Notes</label><textarea id="edit-notes" placeholder="Any additional details…"></textarea></div>
+    <button class="btn btn-primary" onclick="saveAssetEdit()">Save Changes</button>
+    <button class="btn btn-ghost" onclick="closeEditPanel()" style="margin-top:8px">Cancel</button>
+  </div>
 </div>
 
 <!-- QR Label modal -->
@@ -921,9 +966,8 @@ async function openDetail(assetId) {
       })()}
     </div>
     <div style="display:flex;gap:8px;margin-bottom:10px">
-      <button class="btn btn-ghost btn-sm" onclick="showQRCode('${a.id}','${a.name.replace(/'/g,"\\'")}','${a.homeLocation}')" style="flex:1">
-        QR Label
-      </button>
+      <button class="btn btn-ghost btn-sm" onclick="showEditPanel(${JSON.stringify(a).replace(/"/g,'&quot;')})" style="flex:1">Edit</button>
+      <button class="btn btn-ghost btn-sm" onclick="showQRCode('${a.id}','${a.name.replace(/'/g,"\\'")}','${a.homeLocation}')" style="flex:1">QR Label</button>
     </div>
     ${currentUser && currentUser.role === 'ADMIN' && a.status !== 'RETIRED' ? `
     <div class="section-head">Admin</div>
@@ -1143,6 +1187,45 @@ function saveConfig() {
 async function runSetup() {
   const res = await api({ action: 'setup' });
   toast(res?.message || 'Done', 'success');
+}
+
+// ── Edit Asset ─────────────────────────────────────────────────
+let editingAsset = null;
+
+function showEditPanel(asset) {
+  editingAsset = asset;
+  document.getElementById('edit-name').value     = asset.name        || '';
+  document.getElementById('edit-category').value = asset.category    || 'TOOL';
+  document.getElementById('edit-desc').value     = asset.description || '';
+  document.getElementById('edit-notes').value    = asset.notes       || '';
+  document.getElementById('edit-panel').classList.add('open');
+}
+
+function closeEditPanel() {
+  document.getElementById('edit-panel').classList.remove('open');
+  editingAsset = null;
+}
+
+async function saveAssetEdit() {
+  if (!editingAsset) return;
+  const body = {
+    action:      'updateAsset',
+    assetId:     editingAsset.id,
+    name:        document.getElementById('edit-name').value.trim(),
+    category:    document.getElementById('edit-category').value,
+    description: document.getElementById('edit-desc').value.trim(),
+    notes:       document.getElementById('edit-notes').value.trim(),
+    user:        currentUser ? currentUser.name : USERNAME,
+  };
+  if (!body.name) { toast('Name is required', 'error'); return; }
+  const res = await apiPost(body);
+  if (res && res.success) {
+    toast('Saved ✓', 'success');
+    closeEditPanel();
+    closeDetail();
+    openDetail(editingAsset.id);
+    loadAssets();
+  } else toast(res?.error || 'Error', 'error');
 }
 
 // ── QR Code ────────────────────────────────────────────────────
