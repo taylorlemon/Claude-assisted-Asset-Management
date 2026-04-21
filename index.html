@@ -259,6 +259,45 @@
     font-family: var(--mono); padding: 0 3px;
   }
 
+  /* ── QR Label modal ── */
+  #qr-modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+    z-index: 80; display: none; align-items: center; justify-content: center; padding: 24px;
+  }
+  #qr-modal.open { display: flex; }
+  .qr-sheet {
+    background: #fff; border-radius: 16px;
+    padding: 28px 24px 20px; width: 100%; max-width: 320px; text-align: center;
+  }
+  .qr-sheet #qr-code-container { display: flex; justify-content: center; margin-bottom: 16px; }
+  .qr-sheet #qr-code-container img, .qr-sheet #qr-code-container canvas { border-radius: 4px; }
+  .qr-asset-id   { font-family: monospace; font-size: 18px; font-weight: 700; color: #111; letter-spacing: 0.05em; }
+  .qr-asset-name { font-size: 14px; color: #333; margin: 4px 0 2px; font-weight: 600; }
+  .qr-asset-loc  { font-size: 12px; color: #888; margin-bottom: 20px; }
+  .qr-actions    { display: flex; gap: 10px; }
+  .qr-btn        { flex: 1; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; font-family: sans-serif; }
+  .qr-btn-print  { background: #111; color: #fff; }
+  .qr-btn-close  { background: #f0f0f0; color: #333; }
+
+  /* ── Print styles ── */
+  @media print {
+    body > *          { display: none !important; }
+    #print-area       { display: block !important; }
+  }
+  #print-area {
+    display: none;
+  }
+  #print-area .label-grid {
+    display: flex; flex-wrap: wrap; gap: 12px; padding: 8px;
+  }
+  #print-area .label {
+    width: 2.5in; text-align: center; padding: 10px;
+    border: 1px dashed #ccc; border-radius: 6px; page-break-inside: avoid;
+  }
+  #print-area .label .l-id   { font-family: monospace; font-size: 13px; font-weight: 700; margin-top: 8px; }
+  #print-area .label .l-name { font-size: 11px; color: #333; margin-top: 2px; }
+  #print-area .label .l-loc  { font-size: 10px; color: #888; }
+
   /* ── Login overlay ── */
   #login-overlay {
     position: fixed; inset: 0; background: var(--bg);
@@ -505,6 +544,25 @@
   <div id="detail-body"></div>
 </div>
 
+<!-- QR Label modal -->
+<div id="qr-modal">
+  <div class="qr-sheet">
+    <div id="qr-code-container"></div>
+    <div class="qr-asset-id"  id="qr-disp-id"></div>
+    <div class="qr-asset-name" id="qr-disp-name"></div>
+    <div class="qr-asset-loc"  id="qr-disp-loc"></div>
+    <div class="qr-actions">
+      <button class="qr-btn qr-btn-print" onclick="printLabel()">Print Label</button>
+      <button class="qr-btn qr-btn-close" onclick="closeQRModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Print area (hidden on screen, visible when printing) -->
+<div id="print-area">
+  <div class="label-grid" id="print-label-grid"></div>
+</div>
+
 <!-- Request transfer modal -->
 <div id="request-overlay">
   <div class="request-sheet">
@@ -570,6 +628,7 @@
 <div id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 // ── State ──────────────────────────────────────────────────────
 let API_URL  = localStorage.getItem('assetTrackerUrl')  || '';
@@ -861,6 +920,11 @@ async function openDetail(assetId) {
         }
       })()}
     </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <button class="btn btn-ghost btn-sm" onclick="showQRCode('${a.id}','${a.name.replace(/'/g,"\\'")}','${a.homeLocation}')" style="flex:1">
+        QR Label
+      </button>
+    </div>
     ${currentUser && currentUser.role === 'ADMIN' && a.status !== 'RETIRED' ? `
     <div class="section-head">Admin</div>
     <button class="btn btn-ghost btn-sm" style="width:100%;color:var(--muted);margin-bottom:14px"
@@ -1079,6 +1143,53 @@ function saveConfig() {
 async function runSetup() {
   const res = await api({ action: 'setup' });
   toast(res?.message || 'Done', 'success');
+}
+
+// ── QR Code ────────────────────────────────────────────────────
+function showQRCode(assetId, assetName, location) {
+  document.getElementById('qr-disp-id').textContent   = assetId;
+  document.getElementById('qr-disp-name').textContent = assetName;
+  document.getElementById('qr-disp-loc').textContent  = location;
+  const container = document.getElementById('qr-code-container');
+  container.innerHTML = '';
+  new QRCode(container, {
+    text:         assetId,
+    width:        200,
+    height:       200,
+    colorDark:    '#000000',
+    colorLight:   '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H,
+  });
+  document.getElementById('qr-modal').classList.add('open');
+}
+
+function closeQRModal() {
+  document.getElementById('qr-modal').classList.remove('open');
+}
+
+function printLabel() {
+  const id   = document.getElementById('qr-disp-id').textContent;
+  const name = document.getElementById('qr-disp-name').textContent;
+  const loc  = document.getElementById('qr-disp-loc').textContent;
+
+  // Render a fresh QR code into the print area
+  const grid = document.getElementById('print-label-grid');
+  grid.innerHTML = '';
+  const labelDiv = document.createElement('div');
+  labelDiv.className = 'label';
+  const qrDiv = document.createElement('div');
+  labelDiv.appendChild(qrDiv);
+  labelDiv.innerHTML += `<div class="l-id">${id}</div><div class="l-name">${name}</div><div class="l-loc">${loc}</div>`;
+  grid.appendChild(labelDiv);
+
+  new QRCode(qrDiv, {
+    text: id, width: 160, height: 160,
+    colorDark: '#000000', colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H,
+  });
+
+  // Give QR code time to render then print
+  setTimeout(() => window.print(), 300);
 }
 
 // ── Retire ─────────────────────────────────────────────────────
