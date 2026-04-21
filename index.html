@@ -1085,8 +1085,8 @@ async function runSetup() {
 async function doRetireAsset(assetId, assetName) {
   if (!confirm(`Retire "${assetName}"?\n\nIt will be removed from active inventory but all records and history will be kept.`)) return;
   const reason = prompt('Reason for retiring (optional):') || 'Retired from service';
-  const res = await apiPost({
-    action:  'retireAsset',
+  const res = await api({
+    action: 'retireAsset',
     assetId,
     reason,
     user: currentUser ? currentUser.name : USERNAME,
