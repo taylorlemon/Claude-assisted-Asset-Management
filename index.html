@@ -248,6 +248,7 @@
   .badge-pending  { background: rgba(79,124,255,0.12);  color: var(--accent); border: 1px solid rgba(79,124,255,0.25); }
   .badge-approved { background: rgba(56,217,169,0.12);  color: var(--green);  border: 1px solid rgba(56,217,169,0.25); }
   .badge-denied   { background: rgba(240,106,106,0.12); color: var(--danger); border: 1px solid rgba(240,106,106,0.25); }
+  .badge-retired  { background: rgba(107,117,153,0.12); color: var(--muted);  border: 1px solid rgba(107,117,153,0.25); }
 
   /* ── Tab badge ── */
   .tab-badge {
@@ -323,6 +324,7 @@
         <div class="chip" onclick="setFilter('MAINTENANCE',this)">Maint.</div>
         <div class="chip" onclick="setFilter('TOOL',this)">Tools</div>
         <div class="chip" onclick="setFilter('ELEC',this)">Electronics</div>
+        <div class="chip" onclick="setFilter('RETIRED',this)">Retired</div>
       </div>
       <div id="asset-list"><div class="loading-wrap"><div class="spinner"></div></div></div>
     </div>
@@ -780,12 +782,14 @@ function renderAssets() {
     if (currentFacilityFilter !== 'ALL' &&
         a.homeLocation !== currentFacilityFilter &&
         a.currentLocation !== currentFacilityFilter) return false;
-    if (currentFilter !== 'ALL') {
-      if (['AVAILABLE','CHECKED_OUT','MAINTENANCE'].includes(currentFilter)) {
-        if (a.status !== currentFilter) return false;
-      } else {
-        if (a.category !== currentFilter) return false;
-      }
+    if (currentFilter === 'RETIRED') {
+      if (a.status !== 'RETIRED') return false;
+    } else if (currentFilter === 'ALL') {
+      if (a.status === 'RETIRED') return false; // hide retired from normal view
+    } else if (['AVAILABLE','CHECKED_OUT','MAINTENANCE'].includes(currentFilter)) {
+      if (a.status !== currentFilter) return false;
+    } else {
+      if (a.category !== currentFilter || a.status === 'RETIRED') return false;
     }
     if (q && !a.id.toLowerCase().includes(q) && !a.name.toLowerCase().includes(q) && !(a.description||'').toLowerCase().includes(q)) return false;
     return true;
@@ -857,6 +861,13 @@ async function openDetail(assetId) {
         }
       })()}
     </div>
+    ${currentUser && currentUser.role === 'ADMIN' && a.status !== 'RETIRED' ? `
+    <div class="section-head">Admin</div>
+    <button class="btn btn-ghost btn-sm" style="width:100%;color:var(--muted);margin-bottom:14px"
+      onclick="doRetireAsset('${a.id}','${a.name.replace(/'/g,"\\'")}')">
+      Archive / Retire This Asset
+    </button>` : ''}
+    ${a.status === 'RETIRED' ? `<div class="card" style="border-color:rgba(107,117,153,0.3);margin-bottom:14px"><div style="font-size:13px;color:var(--muted);text-align:center">This asset has been retired from service</div></div>` : ''}
     <div class="section-head">History</div>
     <div class="timeline">${renderHistory(histData ? histData.history || [] : [])}</div>`;
 
@@ -1068,6 +1079,23 @@ function saveConfig() {
 async function runSetup() {
   const res = await api({ action: 'setup' });
   toast(res?.message || 'Done', 'success');
+}
+
+// ── Retire ─────────────────────────────────────────────────────
+async function doRetireAsset(assetId, assetName) {
+  if (!confirm(`Retire "${assetName}"?\n\nIt will be removed from active inventory but all records and history will be kept.`)) return;
+  const reason = prompt('Reason for retiring (optional):') || 'Retired from service';
+  const res = await apiPost({
+    action:  'retireAsset',
+    assetId,
+    reason,
+    user: currentUser ? currentUser.name : USERNAME,
+  });
+  if (res && res.success) {
+    toast('Asset retired ✓', 'success');
+    closeDetail();
+    loadAssets();
+  } else toast(res?.error || 'Error', 'error');
 }
 
 // ── Requests ───────────────────────────────────────────────────
