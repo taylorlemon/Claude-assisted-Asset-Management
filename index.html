@@ -222,6 +222,42 @@
   .loading-wrap { display: flex; justify-content: center; padding: 40px; }
   .empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
 
+  /* ── Urgency selector ── */
+  .urgency-btn {
+    flex: 1; padding: 10px; border-radius: 8px; font-size: 12px;
+    font-family: var(--mono); cursor: pointer; border: 1px solid var(--border);
+    background: var(--surface2); color: var(--muted); transition: all 0.15s;
+  }
+  .urgency-btn.active                    { background: rgba(79,124,255,0.15);  border-color: var(--accent); color: var(--accent); }
+  .urgency-btn.active[data-val="HIGH"]   { background: rgba(240,160,90,0.15);  border-color: var(--warn);   color: var(--warn); }
+  .urgency-btn.active[data-val="LOW"]    { background: rgba(107,117,153,0.15); border-color: var(--muted);  color: var(--muted); }
+
+  /* ── Request bottom sheet ── */
+  #request-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    z-index: 60; display: none; align-items: flex-end; justify-content: center;
+  }
+  #request-overlay.open { display: flex; }
+  .request-sheet {
+    background: var(--surface); border-radius: 20px 20px 0 0;
+    padding: 24px 20px max(32px, env(safe-area-inset-bottom));
+    width: 100%; max-width: 500px; max-height: 90dvh; overflow-y: auto;
+  }
+
+  /* ── Request status badges ── */
+  .badge-pending  { background: rgba(79,124,255,0.12);  color: var(--accent); border: 1px solid rgba(79,124,255,0.25); }
+  .badge-approved { background: rgba(56,217,169,0.12);  color: var(--green);  border: 1px solid rgba(56,217,169,0.25); }
+  .badge-denied   { background: rgba(240,106,106,0.12); color: var(--danger); border: 1px solid rgba(240,106,106,0.25); }
+
+  /* ── Tab badge ── */
+  .tab-badge {
+    position: absolute; top: 8px; right: calc(50% - 16px);
+    background: var(--danger); color: #fff; font-size: 9px;
+    min-width: 15px; height: 15px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); padding: 0 3px;
+  }
+
   /* ── Login overlay ── */
   #login-overlay {
     position: fixed; inset: 0; background: var(--bg);
@@ -381,6 +417,11 @@
       </button>
     </div>
 
+    <!-- REQUESTS -->
+    <div class="screen" id="screen-requests">
+      <div id="requests-list"><div class="loading-wrap"><div class="spinner"></div></div></div>
+    </div>
+
     <!-- SETTINGS -->
     <div class="screen" id="screen-settings">
       <div id="user-info-section">
@@ -438,6 +479,11 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
       Add
     </button>
+    <button class="tab" id="tab-requests" onclick="showScreen('requests')" style="position:relative">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h3"/><path d="M16 19l2 2 4-4"/></svg>
+      <span id="req-tab-badge" class="tab-badge" style="display:none"></span>
+      Requests
+    </button>
   </div>
 </div>
 
@@ -455,6 +501,41 @@
     <span id="detail-title" style="font-weight:600"></span>
   </div>
   <div id="detail-body"></div>
+</div>
+
+<!-- Request transfer modal -->
+<div id="request-overlay">
+  <div class="request-sheet">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <div style="font-weight:600;font-size:16px">Request Transfer</div>
+      <button onclick="closeRequestForm()" class="hbtn">Cancel</button>
+    </div>
+    <div id="req-asset-info" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:16px"></div>
+    <div class="field">
+      <label>Reason for request</label>
+      <textarea id="req-reason" placeholder="Why do you need this asset?"></textarea>
+    </div>
+    <div class="field">
+      <label>How long do you need it?</label>
+      <select id="req-duration">
+        <option value="1 day">1 day</option>
+        <option value="2-3 days">2–3 days</option>
+        <option value="1 week" selected>1 week</option>
+        <option value="2 weeks">2 weeks</option>
+        <option value="1 month">1 month</option>
+        <option value="Ongoing">Ongoing / indefinite</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Urgency</label>
+      <div style="display:flex;gap:8px">
+        <button class="urgency-btn" data-val="LOW"    onclick="setUrgency('LOW',this)">Low</button>
+        <button class="urgency-btn active" data-val="NORMAL" onclick="setUrgency('NORMAL',this)">Normal</button>
+        <button class="urgency-btn" data-val="HIGH"   onclick="setUrgency('HIGH',this)">Urgent</button>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="doSubmitRequest()">Submit Request</button>
+  </div>
 </div>
 
 <!-- Login overlay -->
@@ -533,6 +614,7 @@ function launchApp() {
     buildFacilityChips();
     loadDashboard();
     loadAssets();
+    updateRequestBadge();
   });
 }
 
@@ -615,7 +697,7 @@ function setFacilityFilter(f, el) {
 }
 
 // ── Navigation ─────────────────────────────────────────────────
-const titles = { dashboard:'Dashboard', assets:'Assets', checkinout:'Check In / Out', add:'Add Asset', settings:'Settings' };
+const titles = { dashboard:'Dashboard', assets:'Assets', checkinout:'Check In / Out', add:'Add Asset', requests:'Requests', settings:'Settings' };
 
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -623,11 +705,12 @@ function showScreen(name) {
   document.getElementById('screen-' + name).classList.add('active');
   document.getElementById('page-title').textContent = titles[name] || name;
   const tabs = document.querySelectorAll('.tab');
-  const tabMap = { dashboard:0, assets:1, checkinout:2, add:3 };
+  const tabMap = { dashboard:0, assets:1, checkinout:2, add:3, requests:4 };
   if (tabMap[name] !== undefined) tabs[tabMap[name]].classList.add('active');
   if (name === 'dashboard') loadDashboard();
   if (name === 'assets') loadAssets();
   if (name === 'checkinout') resetActionForm();
+  if (name === 'requests') loadRequests();
 }
 
 // ── API ────────────────────────────────────────────────────────
@@ -759,10 +842,20 @@ async function openDetail(assetId) {
       </div>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:10px">
-      ${a.status === 'AVAILABLE'
-        ? `<button class="btn btn-warn btn-sm" onclick="quickAction('${a.id}','out')" style="flex:1">Check Out</button>`
-        : `<button class="btn btn-success btn-sm" onclick="quickAction('${a.id}','in')" style="flex:1">Check In</button>`}
-      <button class="btn btn-ghost btn-sm" onclick="closeDetail();showScreen('checkinout');loadAssetForAction('${a.id}')" style="flex:1">Full Action</button>
+      ${(() => {
+        const isAdmin = !currentUser || currentUser.role === 'ADMIN';
+        const myAsset = isAdmin || a.currentLocation === currentUser.facility || a.homeLocation === currentUser.facility;
+        if (myAsset) {
+          return (a.status === 'AVAILABLE'
+            ? `<button class="btn btn-warn btn-sm" onclick="quickAction('${a.id}','out')" style="flex:1">Check Out</button>`
+            : `<button class="btn btn-success btn-sm" onclick="quickAction('${a.id}','in')" style="flex:1">Check In</button>`)
+            + `<button class="btn btn-ghost btn-sm" onclick="closeDetail();showScreen('checkinout');loadAssetForAction('${a.id}')" style="flex:1">Full Action</button>`;
+        } else {
+          return `<button class="btn btn-ghost btn-sm" onclick="openRequestForm('${a.id}')" style="flex:1">
+            ↗ Request Transfer
+          </button>`;
+        }
+      })()}
     </div>
     <div class="section-head">History</div>
     <div class="timeline">${renderHistory(histData ? histData.history || [] : [])}</div>`;
@@ -902,10 +995,23 @@ async function loadLocations() {
   const data = await api({ action: 'getLocations' });
   if (!data || !data.locations) return;
   allLocations = data.locations;
-  const opts = data.locations.map(l => `<option value="${l.code}">${l.name}</option>`).join('');
-  ['add-location','action-to-loc','action-in-loc'].forEach(id => {
+
+  // Add Asset dropdown: STAFF can only add to their own facility
+  const isStaff = currentUser && currentUser.role !== 'ADMIN';
+  const addableLocs = isStaff
+    ? data.locations.filter(l => l.code === currentUser.facility)
+    : data.locations;
+  const addEl = document.getElementById('add-location');
+  if (addEl) {
+    addEl.innerHTML = addableLocs.map(l => `<option value="${l.code}">${l.name}</option>`).join('');
+    addEl.disabled = isStaff;
+  }
+
+  // Check in/out dropdowns: all locations
+  const allOpts = data.locations.map(l => `<option value="${l.code}">${l.name}</option>`).join('');
+  ['action-to-loc','action-in-loc'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.innerHTML = opts;
+    if (el) el.innerHTML = allOpts;
   });
 }
 
@@ -962,6 +1068,152 @@ function saveConfig() {
 async function runSetup() {
   const res = await api({ action: 'setup' });
   toast(res?.message || 'Done', 'success');
+}
+
+// ── Requests ───────────────────────────────────────────────────
+let pendingRequestAsset = null;
+let currentUrgency = 'NORMAL';
+
+function openRequestForm(assetId) {
+  const asset = allAssets.find(a => a.id === assetId);
+  if (!asset) { toast('Asset not found', 'error'); return; }
+  pendingRequestAsset = asset;
+  currentUrgency = 'NORMAL';
+  document.querySelectorAll('.urgency-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.val === 'NORMAL');
+  });
+  document.getElementById('req-reason').value = '';
+  document.getElementById('req-duration').value = '1 week';
+  document.getElementById('req-asset-info').innerHTML = `
+    <div class="asset-id">${asset.id}</div>
+    <div class="asset-name" style="font-size:15px">${asset.name}</div>
+    <div class="asset-loc">Currently at: ${asset.currentLocation} · Home: ${asset.homeLocation}</div>`;
+  document.getElementById('request-overlay').classList.add('open');
+  closeDetail();
+}
+
+function closeRequestForm() {
+  document.getElementById('request-overlay').classList.remove('open');
+  pendingRequestAsset = null;
+}
+
+function setUrgency(val, el) {
+  currentUrgency = val;
+  document.querySelectorAll('.urgency-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+async function doSubmitRequest() {
+  if (!pendingRequestAsset) return;
+  const reason = document.getElementById('req-reason').value.trim();
+  if (!reason) { toast('Please enter a reason', 'error'); return; }
+  const res = await apiPost({
+    action:      'submitRequest',
+    assetId:     pendingRequestAsset.id,
+    fromFacility: currentUser.facility,
+    requestedBy: currentUser.name,
+    reason,
+    duration:    document.getElementById('req-duration').value,
+    urgency:     currentUrgency,
+  });
+  if (res && res.success) {
+    toast('Request submitted ✓', 'success');
+    closeRequestForm();
+    updateRequestBadge();
+  } else toast(res?.error || 'Error', 'error');
+}
+
+async function loadRequests() {
+  document.getElementById('requests-list').innerHTML = '<div class="loading-wrap"><div class="spinner"></div></div>';
+  const isAdmin = currentUser && currentUser.role === 'ADMIN';
+  const params = { action: 'getRequests' };
+  if (!isAdmin) params.facility = currentUser.facility;
+  const data = await api(params);
+  if (!data) return;
+  renderRequests(data.requests || [], isAdmin);
+  updateRequestBadge(data.requests || []);
+}
+
+function renderRequests(requests, isAdmin) {
+  const container = document.getElementById('requests-list');
+  if (!requests.length) {
+    container.innerHTML = '<div class="empty">No requests yet</div>';
+    return;
+  }
+
+  const pending = requests.filter(r => r.status === 'PENDING');
+  const resolved = requests.filter(r => r.status !== 'PENDING');
+  const urgencyColor = { HIGH: 'var(--warn)', NORMAL: 'var(--accent)', LOW: 'var(--muted)' };
+  const urgencyLabel = { HIGH: 'Urgent', NORMAL: 'Normal', LOW: 'Low' };
+
+  const renderCard = (r) => `
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-row" style="margin-bottom:8px">
+        <div>
+          <div class="asset-id">${r.assetId}</div>
+          <div style="font-weight:600;font-size:15px;margin-top:2px">${r.assetName}</div>
+        </div>
+        <span class="badge badge-${r.status.toLowerCase()}">${r.status}</span>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px">
+        From: <span style="color:var(--text)">${r.fromFacility}</span> &nbsp;·&nbsp;
+        By: <span style="color:var(--text)">${r.requestedBy}</span>
+      </div>
+      <div style="font-size:13px;margin-bottom:6px">${r.reason}</div>
+      <div style="display:flex;gap:12px;font-size:12px;color:var(--muted)">
+        <span>⏱ ${r.duration}</span>
+        <span style="color:${urgencyColor[r.urgency]||'var(--muted)'}">● ${urgencyLabel[r.urgency]||r.urgency}</span>
+      </div>
+      ${r.adminNotes ? `<div style="font-size:12px;color:var(--muted);margin-top:6px;font-style:italic">${r.adminNotes}</div>` : ''}
+      ${isAdmin && r.status === 'PENDING' ? `
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-success btn-sm" style="flex:1" onclick="doResolveRequest('${r.id}','approve')">Approve</button>
+          <button class="btn btn-danger btn-sm"  style="flex:1" onclick="doResolveRequest('${r.id}','deny')">Deny</button>
+        </div>` : ''}
+    </div>`;
+
+  let html = '';
+  if (pending.length) {
+    html += `<div class="section-head" style="margin-top:0">Pending (${pending.length})</div>`;
+    html += pending.map(renderCard).join('');
+  }
+  if (resolved.length) {
+    html += `<div class="section-head">Resolved</div>`;
+    html += resolved.map(renderCard).join('');
+  }
+  container.innerHTML = html;
+}
+
+async function doResolveRequest(requestId, action) {
+  const res = await apiPost({
+    action:     'resolveRequest',
+    requestId,
+    resolution: action,
+    resolvedBy: currentUser.name,
+  });
+  if (res && res.success) {
+    toast(action === 'approve' ? 'Approved ✓' : 'Denied', action === 'approve' ? 'success' : null);
+    loadRequests();
+    loadAssets();
+  } else toast(res?.error || 'Error', 'error');
+}
+
+async function updateRequestBadge(requests) {
+  if (!requests) {
+    const isAdmin = currentUser && currentUser.role === 'ADMIN';
+    const params = { action: 'getRequests' };
+    if (!isAdmin) params.facility = currentUser.facility;
+    const data = await api(params);
+    requests = data ? data.requests || [] : [];
+  }
+  const pending = requests.filter(r => r.status === 'PENDING').length;
+  const badge = document.getElementById('req-tab-badge');
+  if (pending > 0) {
+    badge.textContent = pending;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
 }
 
 // ── Toast ──────────────────────────────────────────────────────
